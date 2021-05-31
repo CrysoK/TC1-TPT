@@ -67,11 +67,31 @@ int main() {
     case 1:
       printf("Carga por partes\n");
       af = lst_vacia();
+      
       printf("Ingrese el conjunto de estados\n");
       entrada = sds_scan();
-      lst_final(af, sl_nuevo(entrada));
-      printf("Ingrese el conjunto de símbolos del alfabeto\n");
+      lst_ins_final(&af, entrada);
+      sdsfree(entrada);
+
+      printf("Ingrese el conjunto de simbolos del alfabeto\n");
+      entrada = sds_scan();
+      lst_ins_final(&af, entrada);
+      sdsfree(entrada);
       
+      printf("Ingrese el conjunto de transiciones\n");
+      entrada = sds_scan();
+      lst_ins_final(&af, entrada);
+      sdsfree(entrada);
+
+      printf("Ingrese el estado inicial\n");
+      entrada = sds_scan();
+      lst_ins_final(&af, entrada);
+      sdsfree(entrada);
+
+      printf("Ingrese el conjunto de estados de aceptacion\n");
+      entrada = sds_scan();
+      lst_ins_final(&af, entrada);
+      sdsfree(entrada);
       break;
     case 2:
       
@@ -80,7 +100,8 @@ int main() {
       printf("# ");
       entrada = sds_scan();
       af = sl_nuevo(entrada);
-      printf("%s\n", entrada);
+      //printf("%s\n", entrada);
+      sdsfree(entrada);
       break;
   }
 

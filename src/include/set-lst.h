@@ -55,8 +55,8 @@ int             set_cardinal(struct sl_nodo* set);
 
 // Crea una lista vacia
 struct sl_nodo *lst_vacia();
-// Inserta una lista al final de otra
-void            lst_final(struct sl_nodo ** lista, struct sl_nodo * nuevo);
+// Inserta un elemento al final de una lista
+void            lst_ins_final(struct sl_nodo ** lista, char * nuevo);
 
 // CADENAS
 

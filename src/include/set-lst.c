@@ -118,21 +118,27 @@ int set_cardinal(struct sl_nodo *nodo) {
 
 // LISTAS
 
-struct sl_nodo *lst_vacia(){
+struct sl_nodo *lst_vacia() {
   struct sl_nodo * nuevo = sl_crear(sdsnew("[]"));
   return nuevo;
 }
 
-void lst_final(struct sl_nodo ** lista, struct sl_nodo * nuevo){
+void lst_ins_final(struct sl_nodo ** lista, char * nuevo) {
   if((*lista)->tipo != LST) {
     // ERROR
+    printf("<x> El argumento no es una lista\n");
     return;
   }
-  if(nuevo->tipo != LST){
-    // ERROR
-    return;
+
+  if(str_es_sl(nuevo)) {
+    if(DEBUG) printf("<?> Insertando un conjunto o lista a la lista\n");
+    link_sig(ultimo_nodo(*lista), sl_nuevo(nuevo));
+  } else {
+    if(DEBUG) printf("<?> Insertando una cadena a la lista\n");
+    struct sl_nodo *aux = sl_nodo_crear(LST);
+    link_dato(aux, str_crear(nuevo));
+    link_sig(ultimo_nodo(*lista), aux);
   }
-  link_sig(ultimo_nodo(*lista), nuevo);
 }
 
 // DEFINICIONES PRIVADAS ///////////////////////////////////////////////////////
@@ -161,7 +167,7 @@ void error(enum ERR key, char * f, int l) {
 
 struct sl_nodo *sl_nodo_crear(enum TIPO_NODO tipo) {
   struct sl_nodo *nuevo;
-  nuevo = malloc(sizeof *nuevo);
+  nuevo = malloc(sizeof * nuevo);
   nuevo->tipo = tipo;
   nuevo->dato = NULL;
   nuevo->sig = NULL;
@@ -171,7 +177,7 @@ struct sl_nodo *sl_nodo_crear(enum TIPO_NODO tipo) {
 struct sl_nodo *str_crear(char *str) {
   struct sl_nodo *nuevo;
   // nuevo = (struct sl_nodo *)malloc(sizeof(struct sl_nodo));
-  nuevo = malloc(sizeof *nuevo);
+  nuevo = malloc(sizeof * nuevo);
   nuevo->tipo = STR;
   nuevo->str = sdsnew(str);
   return nuevo;
@@ -229,13 +235,13 @@ bool str_valida(char *str) {
 enum TIPO_NODO str_tipo(char *str) {
   switch(str[0]) {
     case '{':
-      if(DEBUG) printf("<?> Tipo \"conjunto\" detectado\n");
+      if(DEBUG) printf("<?> Tipo \"conjunto\" detectado ('{')\n");
       return SET;
     case '[':
-      if(DEBUG) printf("<?> Tipo \"lista\" detectado\n");
+      if(DEBUG) printf("<?> Tipo \"lista\" detectado ('[')\n");
       return LST;
     default:
-      if(DEBUG) printf("<?> Tipo \"cadena\" detectado\n");
+      if(DEBUG) printf("<?> Tipo \"cadena\" detectado ('%c')\n", str[0]);
       return STR;
   }
 }
@@ -305,7 +311,7 @@ char **str_separar(char *str, int *cant) {
   if(lar < 0) return NULL;
   // Asignación de memoria inicial
   //array = malloc(sizeof(char *) * mem);
-  array = malloc(sizeof *array * mem);
+  array = malloc(sizeof * array * mem);
   if(array == NULL) return NULL; // ERROR en la asignación
   // Caso en el que la cadena no tiene caracteres
   if(lar == 0) { *cant = 0; return array; }
@@ -315,7 +321,7 @@ char **str_separar(char *str, int *cant) {
     // Asignación de memoria extra si es necesario
     if(mem < elem + 2) {
       mem *= 2;
-      char * *aux = realloc(array, sizeof *array * mem);
+      char * *aux = realloc(array, sizeof * array * mem);
       if(aux == NULL) goto error; // ERROR en la asignación
       array = aux;
     }
