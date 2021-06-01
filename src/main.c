@@ -65,42 +65,42 @@ int main() {
 
   switch(opc) {
     case 1:
-      printf("Carga por partes\n");
+      printf("Carga por partes\n# ");
       af = lst_vacia();
-      
-      printf("Ingrese el conjunto de estados\n");
+
+      printf("Ingrese el conjunto de estados\n# ");
       entrada = sds_scan();
       lst_ins_final(&af, entrada);
       sdsfree(entrada);
 
-      printf("Ingrese el conjunto de simbolos del alfabeto\n");
-      entrada = sds_scan();
-      lst_ins_final(&af, entrada);
-      sdsfree(entrada);
-      
-      printf("Ingrese el conjunto de transiciones\n");
+      printf("Ingrese el conjunto de simbolos del alfabeto\n# ");
       entrada = sds_scan();
       lst_ins_final(&af, entrada);
       sdsfree(entrada);
 
-      printf("Ingrese el estado inicial\n");
+      printf("Ingrese el conjunto de transiciones\n# ");
       entrada = sds_scan();
       lst_ins_final(&af, entrada);
       sdsfree(entrada);
 
-      printf("Ingrese el conjunto de estados de aceptacion\n");
+      printf("Ingrese el estado inicial\n# ");
+      entrada = sds_scan();
+      lst_ins_final(&af, entrada);
+      sdsfree(entrada);
+
+      printf("Ingrese el conjunto de estados de aceptacion\n# ");
       entrada = sds_scan();
       lst_ins_final(&af, entrada);
       sdsfree(entrada);
       break;
     case 2:
-      
+
       printf("Carga directa\n");
       printf("Ingrese el automata finito completo\n");
       printf("# ");
       entrada = sds_scan();
       af = sl_nuevo(entrada);
-      //printf("%s\n", entrada);
+      printf("Entrada: %s\n", entrada);
       sdsfree(entrada);
       break;
   }
@@ -120,6 +120,7 @@ int main() {
   printf("\nCardinal = %d", set_cardinal(af));
   printf("\n\n");
   */
+  sl_free(&af);
 
   pausa();
 

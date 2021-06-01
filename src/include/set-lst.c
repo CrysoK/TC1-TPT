@@ -32,7 +32,7 @@ struct sl_nodo *sl_nodo_crear(enum TIPO_NODO);
 //
 void            sl_mostrar_rec(struct sl_nodo *);
 //
-struct sl_nodo *str_crear(char *);
+struct sl_nodo *str_nodo_crear(char *);
 //
 void            link_dato(struct sl_nodo *, struct sl_nodo *);
 //
@@ -50,12 +50,13 @@ enum TIPO_NODO  str_tipo(char *);
 // 
 bool            str_es_sl(char *);
 //
-bool            set_is_vacio(struct sl_nodo *);
+bool            sl_es_vacio(struct sl_nodo *);
 
 // DEFINICIONES PÚBLICAS ///////////////////////////////////////////////////////
 
 // GENERAL
 
+// MARCA #1
 struct sl_nodo *sl_nuevo(char *entrada) {
   // Validacion de la cadena de entrada
   if(!str_valida(entrada)) return NULL;
@@ -67,46 +68,34 @@ struct sl_nodo *sl_nuevo(char *entrada) {
   return nuevo;
 }
 
-struct sl_nodo *sl_crear(char *input) {
-  // Crear raiz
-  struct sl_nodo *raiz = NULL;
-  // De qué tipo es input
-  enum TIPO_NODO tipo = str_tipo(input);
-
-  char **array; int cant = 0;
-  // Crear un array con los elementos de input
-  array = str_separar(input, &cant);
-
-  if(cant > 0) { // Hay elementos
-    for(int i = 0; i < cant; i++) { // Por cada elemento
-      struct sl_nodo *aux = sl_nodo_crear(tipo); // Nodo para el nuevo elemento, todos del mismo tipo
-      if(str_tipo(array[i]) != STR) { // El elemento es un subconjunto/sublista
-        // Crear el subset/sublst y unirlo como elemento del actual (como dato)
-        link_dato(aux, sl_crear(array[i]));
-      } else { // El elemento es STR
-        // Crear el nodo STR y unirlo como elemento (como dato)
-        link_dato(aux, str_crear(array[i]));
-      }
-      if(raiz == NULL) raiz = aux; // Si raiz aún no apunta a un nodo, inicializar
-      else link_sig(ultimo_nodo(raiz), aux); // Enlazar aux como el ultimo elemento del arbol
-    } // Fin del ciclo
-  } else { // No hay elementos
-    // ERROR: Cantidad de elementos = 0 ???
-  }
-  //sdsfreesplitres(input, cant); // Libera la memoria utilizada por el array (Provoca errores)
-  return raiz;
-}
-
+// TODO Arreglar considerando la nueva forma de implementar conjunto-lista vacío
 void sl_mostrar(struct sl_nodo * nodo) {
   sl_mostrar_rec(nodo);
   printf("\n");
+}
+
+void sl_free(struct sl_nodo ** sl) {
+  // Exit si el nodo no existe
+  if(*sl == NULL) return;
+  if((*sl)->tipo != STR) {
+    // Se libera el subconjunto o sublista
+    sl_free(&((*sl)->dato));
+    // Se libera el siguiente elemento
+    sl_free(&((*sl)->sig));
+  } else {
+    // Se libera la cadena
+    sdsfree((*sl)->str);
+  }
+  // Finalmente se libera el nodo actual
+  free(*sl);
+  *sl = NULL;
 }
 
 // CONJUNTOS
 
 int set_cardinal(struct sl_nodo *nodo) {
   // Control conjunto vacío
-  if(set_is_vacio(nodo)) return 0;
+  if(sl_es_vacio(nodo)) return 0;
 
   int cnt = 0;
   while(nodo != NULL) {
@@ -119,7 +108,7 @@ int set_cardinal(struct sl_nodo *nodo) {
 // LISTAS
 
 struct sl_nodo *lst_vacia() {
-  struct sl_nodo * nuevo = sl_crear(sdsnew("[]"));
+  struct sl_nodo * nuevo = sl_nodo_crear(LST);
   return nuevo;
 }
 
@@ -129,16 +118,17 @@ void lst_ins_final(struct sl_nodo ** lista, char * nuevo) {
     printf("<x> El argumento no es una lista\n");
     return;
   }
-
+  bool vacia = sl_es_vacio(*lista);
+  struct sl_nodo * dato;
   if(str_es_sl(nuevo)) {
     if(DEBUG) printf("<?> Insertando un conjunto o lista a la lista\n");
-    link_sig(ultimo_nodo(*lista), sl_nuevo(nuevo));
+    dato = sl_nuevo(nuevo);
   } else {
     if(DEBUG) printf("<?> Insertando una cadena a la lista\n");
-    struct sl_nodo *aux = sl_nodo_crear(LST);
-    link_dato(aux, str_crear(nuevo));
-    link_sig(ultimo_nodo(*lista), aux);
+    dato = str_nodo_crear(nuevo);
   }
+  if(!vacia) link_sig(ultimo_nodo(*lista), sl_nodo_crear(LST));
+  link_dato(ultimo_nodo(*lista), dato);
 }
 
 // DEFINICIONES PRIVADAS ///////////////////////////////////////////////////////
@@ -165,6 +155,36 @@ void error(enum ERR key, char * f, int l) {
   }
 }
 
+struct sl_nodo *sl_crear(char *input) {
+  // Crear raiz
+  struct sl_nodo *raiz = NULL;
+  // De qué tipo es input
+  enum TIPO_NODO tipo = str_tipo(input);
+
+  char **array; int cant = 0;
+  // Crear un array con los elementos de input
+  array = str_separar(input, &cant);
+
+  if(cant > 0) { // Hay elementos
+    for(int i = 0; i < cant; i++) { // Por cada elemento
+      struct sl_nodo *aux = sl_nodo_crear(tipo); // Nodo para el nuevo elemento, todos del mismo tipo
+      if(str_tipo(array[i]) != STR) { // El elemento es un subconjunto/sublista
+        // Crear el subset/sublst y unirlo como elemento del actual (como dato)
+        link_dato(aux, sl_crear(array[i]));
+      } else { // El elemento es STR
+        // Si la cadena no es vacía, crear el nodo STR y unirlo como elemento (como dato)
+        if(sdscmp(array[i], "") != 0)  link_dato(aux, str_nodo_crear(array[i]));
+      }
+      if(raiz == NULL) raiz = aux; // Si raiz aún no apunta a un nodo, inicializar
+      else link_sig(ultimo_nodo(raiz), aux); // Enlazar aux como el ultimo elemento del arbol
+    } // Fin del ciclo
+  } else { // No hay elementos
+    // ERROR: Cantidad de elementos = 0 ???
+  }
+  sdsfreesplitres(array, cant); // Libera la memoria utilizada por el array
+  return raiz;
+}
+
 struct sl_nodo *sl_nodo_crear(enum TIPO_NODO tipo) {
   struct sl_nodo *nuevo;
   nuevo = malloc(sizeof * nuevo);
@@ -174,7 +194,7 @@ struct sl_nodo *sl_nodo_crear(enum TIPO_NODO tipo) {
   return nuevo;
 }
 
-struct sl_nodo *str_crear(char *str) {
+struct sl_nodo *str_nodo_crear(char *str) {
   struct sl_nodo *nuevo;
   // nuevo = (struct sl_nodo *)malloc(sizeof(struct sl_nodo));
   nuevo = malloc(sizeof * nuevo);
@@ -384,12 +404,12 @@ void sl_mostrar_rec(struct sl_nodo * nodo) {
   } else printf("<i> No hay datos");
 }
 
-// CONJUNTOS
-
-bool set_is_vacio(struct sl_nodo * set) {
-  if(set->dato->tipo != STR) return false;
-  else if(sdscmp(set->dato->str, "") == 0) {
+bool sl_es_vacio(struct sl_nodo * sl) {
+  if(sl->dato != NULL) return false;
+  else {
     if(DEBUG) printf("<?> Conjunto vacio detectado\n");
     return true;
-  } else return false;
+  }
 }
+
+// CONJUNTOS

@@ -23,7 +23,7 @@ TARGET:=main
 # Compilador
 CC:=gcc
 # Opciones para C y C++ | # -DLOG_USE_COLOR es para logc
-COMMONFLAGS:=-Wall -O2 -g #-ggdb
+COMMONFLAGS:=-Wall -O2 -ggdb #-ggdb
 # Opciones solo para C
 CFLAGS=$(COMMONFLAGS)
 # Opciones solo para C++
