@@ -1,6 +1,7 @@
 .vscode
 ej
-obj
 old
+*.d
+*.o
 *.exe
 *.txt
