@@ -5,9 +5,11 @@
 #include <string.h>
 #include "auxlib.h"
 
+////////////////////////////////////////////////////////////////////////////////
 // DECLARACIONES PRIVADAS //////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-// VARIABLES-CONSTANTES
+// VARIABLES-CONSTANTES ////////////////////////////////////////////////////////
 
 // Codigos de error
 enum ERR {
@@ -21,60 +23,80 @@ enum ERR {
   NO_S_L
 };
 
-// PROTOTIPOS
-
-// Mensajes de error
-void            error(enum ERR codigo, char * archivo, int linea);
-//
-struct sl_nodo *sl_crear(char *);
-// 
-struct sl_nodo *sl_nodo_crear(enum TIPO_NODO);
-//
-void            sl_mostrar_rec(struct sl_nodo *);
-//
-struct sl_nodo *str_nodo_crear(char *);
-//
-void            link_dato(struct sl_nodo *, struct sl_nodo *);
-//
-void            link_sig(struct sl_nodo *, struct sl_nodo *);
-// 
-struct sl_nodo *ultimo_nodo(struct sl_nodo*);
-// Extrae la cadena encerrada en llaves o corchetes
-char          **str_separar(char *, int *);
-// Quita espacios alrededor de un elemento
-void            str_espacios(char *);
-// Verifica que la entrada sea un conjunto o una lista
-bool            str_valida(char *);
-// Devuelve si la entrada es un conjunto, una lista o una cadena
-enum TIPO_NODO  str_tipo(char *);
-// 
-bool            str_es_sl(char *);
-//
-bool            sl_es_vacio(struct sl_nodo *);
-
-// DEFINICIONES PÚBLICAS ///////////////////////////////////////////////////////
+// PROTOTIPOS //////////////////////////////////////////////////////////////////
 
 // GENERAL
 
+// Mensajes de error
+void            error(enum ERR codigo, char *archivo, int linea);
+//
+struct NodoSLS *sl_crear(char *cadena);
+// 
+struct NodoSLS *sl_nodo_crear(enum TIPO_NODO tipo);
+//
+void            sl_mostrar_rec(struct NodoSLS *nodo, bool es_el_primero);
+//
+void            link_dato(struct NodoSLS *parent, struct NodoSLS *dato);
+//
+void            link_sig(struct NodoSLS *nodo, struct NodoSLS *siguiente);
+// 
+struct NodoSLS *ultimo_nodo(struct NodoSLS* set_lst);
+// Devuelve si la entrada es un conjunto, una lista o una cadena
+enum TIPO_NODO  str_tipo(char * cadena);
+//
+bool            sl_es_vacio(struct NodoSLS *set_lst);
+//
+bool            ya_existe(struct NodoSLS *set_lst, char *elemento);
+
+// CONJUNTOS
+void            ins_orden(struct NodoSLS *set_raiz, struct NodoSLS *nuevo);
+
+// LISTAS
+
+
+
+// CADENAS
+
+//
+struct NodoSLS *str_nodo_crear(char * cadena);
+// Extrae la cadena encerrada en llaves o corchetes
+char          **str_separar(char * cadena, int * cantidad);
+// Quita espacios alrededor de un elemento
+void            str_espacios(char * cadena);
+// Verifica que la entrada sea un conjunto o una lista
+bool            str_valida(char * cadena);
+// 
+bool            str_es_sl(char * cadena);
+
+////////////////////////////////////////////////////////////////////////////////
+// DEFINICIONES PÚBLICAS ///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// GENERAL /////////////////////////////////////////////////////////////////////
+
 // MARCA #1
-struct sl_nodo *sl_nuevo(char *entrada) {
+struct NodoSLS *sl_nuevo(char *entrada) {
   // Validacion de la cadena de entrada
   if(!str_valida(entrada)) return NULL;
   // Puntero a retornar
-  struct sl_nodo *nuevo = NULL;
+  struct NodoSLS *nuevo = NULL;
 
   nuevo = sl_crear(entrada);
 
   return nuevo;
 }
 
-// TODO Arreglar considerando la nueva forma de implementar conjunto-lista vacío
-void sl_mostrar(struct sl_nodo * nodo) {
-  sl_mostrar_rec(nodo);
+void sl_mostrar(struct NodoSLS * nodo) {
+  // Comprobación de que exista al menos un nodo
+  if(nodo == NULL) {
+    printf("<i> No hay datos");
+    return;
+  }
+  sl_mostrar_rec(nodo, true);
   printf("\n");
 }
 
-void sl_free(struct sl_nodo ** sl) {
+void sl_free(struct NodoSLS ** sl) {
   // Exit si el nodo no existe
   if(*sl == NULL) return;
   if((*sl)->tipo != STR) {
@@ -91,9 +113,9 @@ void sl_free(struct sl_nodo ** sl) {
   *sl = NULL;
 }
 
-// CONJUNTOS
+// CONJUNTOS ///////////////////////////////////////////////////////////////////
 
-int set_cardinal(struct sl_nodo *nodo) {
+int set_cardinal(struct NodoSLS *nodo) {
   // Control conjunto vacío
   if(sl_es_vacio(nodo)) return 0;
 
@@ -105,21 +127,20 @@ int set_cardinal(struct sl_nodo *nodo) {
   return cnt;
 }
 
-// LISTAS
+// LISTAS //////////////////////////////////////////////////////////////////////
 
-struct sl_nodo *lst_vacia() {
-  struct sl_nodo * nuevo = sl_nodo_crear(LST);
+struct NodoSLS *lst_vacia() {
+  struct NodoSLS * nuevo = sl_nodo_crear(LST);
   return nuevo;
 }
 
-void lst_ins_final(struct sl_nodo ** lista, char * nuevo) {
+void lst_ins_final(struct NodoSLS ** lista, char * nuevo) {
   if((*lista)->tipo != LST) {
     // ERROR
     printf("<x> El argumento no es una lista\n");
     return;
   }
-  bool vacia = sl_es_vacio(*lista);
-  struct sl_nodo * dato;
+  struct NodoSLS * dato;
   if(str_es_sl(nuevo)) {
     if(DEBUG) printf("<?> Insertando un conjunto o lista a la lista\n");
     dato = sl_nuevo(nuevo);
@@ -127,13 +148,15 @@ void lst_ins_final(struct sl_nodo ** lista, char * nuevo) {
     if(DEBUG) printf("<?> Insertando una cadena a la lista\n");
     dato = str_nodo_crear(nuevo);
   }
-  if(!vacia) link_sig(ultimo_nodo(*lista), sl_nodo_crear(LST));
+  if(!sl_es_vacio(*lista)) link_sig(ultimo_nodo(*lista), sl_nodo_crear(LST));
   link_dato(ultimo_nodo(*lista), dato);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // DEFINICIONES PRIVADAS ///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-// GENERAL
+// GENERAL /////////////////////////////////////////////////////////////////////
 
 void error(enum ERR key, char * f, int l) {
   switch(key) {
@@ -155,9 +178,9 @@ void error(enum ERR key, char * f, int l) {
   }
 }
 
-struct sl_nodo *sl_crear(char *input) {
+struct NodoSLS *sl_crear(char *input) {
   // Crear raiz
-  struct sl_nodo *raiz = NULL;
+  struct NodoSLS *raiz = NULL;
   // De qué tipo es input
   enum TIPO_NODO tipo = str_tipo(input);
 
@@ -167,7 +190,7 @@ struct sl_nodo *sl_crear(char *input) {
 
   if(cant > 0) { // Hay elementos
     for(int i = 0; i < cant; i++) { // Por cada elemento
-      struct sl_nodo *aux = sl_nodo_crear(tipo); // Nodo para el nuevo elemento, todos del mismo tipo
+      struct NodoSLS *aux = sl_nodo_crear(tipo); // Nodo para el nuevo elemento, todos del mismo tipo
       if(str_tipo(array[i]) != STR) { // El elemento es un subconjunto/sublista
         // Crear el subset/sublst y unirlo como elemento del actual (como dato)
         link_dato(aux, sl_crear(array[i]));
@@ -185,8 +208,8 @@ struct sl_nodo *sl_crear(char *input) {
   return raiz;
 }
 
-struct sl_nodo *sl_nodo_crear(enum TIPO_NODO tipo) {
-  struct sl_nodo *nuevo;
+struct NodoSLS *sl_nodo_crear(enum TIPO_NODO tipo) {
+  struct NodoSLS *nuevo;
   nuevo = malloc(sizeof * nuevo);
   nuevo->tipo = tipo;
   nuevo->dato = NULL;
@@ -194,24 +217,24 @@ struct sl_nodo *sl_nodo_crear(enum TIPO_NODO tipo) {
   return nuevo;
 }
 
-struct sl_nodo *str_nodo_crear(char *str) {
-  struct sl_nodo *nuevo;
-  // nuevo = (struct sl_nodo *)malloc(sizeof(struct sl_nodo));
+struct NodoSLS *str_nodo_crear(char *str) {
+  struct NodoSLS *nuevo;
+  // nuevo = (struct NodoSLS *)malloc(sizeof(struct NodoSLS));
   nuevo = malloc(sizeof * nuevo);
   nuevo->tipo = STR;
   nuevo->str = sdsnew(str);
   return nuevo;
 }
 
-void link_dato(struct sl_nodo *parent, struct sl_nodo *dato) {
+void link_dato(struct NodoSLS *parent, struct NodoSLS *dato) {
   (*parent).dato = dato;
 }
 
-void link_sig(struct sl_nodo *parent, struct sl_nodo *sig) {
+void link_sig(struct NodoSLS *parent, struct NodoSLS *sig) {
   parent->sig = sig;
 }
 
-struct sl_nodo *ultimo_nodo(struct sl_nodo* primero) {
+struct NodoSLS *ultimo_nodo(struct NodoSLS* primero) {
   if(primero->sig != NULL) {
     return ultimo_nodo(primero->sig);
   } else return primero;
@@ -385,26 +408,33 @@ char **str_separar(char *str, int *cant) {
   *cant = 0;
   return NULL;
 }
-
-void sl_mostrar_rec(struct sl_nodo * nodo) {
-  if(nodo != NULL) { // Comprobación de que exista al menos un nodo
-    enum TIPO_NODO tipo = nodo->tipo;
-    (tipo == SET) ? printf("{") : printf("[");
-    while(nodo != NULL) {
-      struct sl_nodo *aux = nodo;
-      if(aux->dato->tipo != STR) {
-        sl_mostrar_rec(aux->dato);
-      } else {
-        printf("%s", aux->dato->str);
-      }
-      if(nodo->sig != NULL) printf(",");
-      nodo = nodo->sig;
-    }
+void sl_mostrar_rec(struct NodoSLS * nodo, bool primero) {
+  // Caso del conjunto vacío o lista vacía
+  if(nodo == NULL) {
+    printf(" ");
+    return;
+  }
+  enum TIPO_NODO tipo = nodo->tipo;
+  if(tipo == STR) {
+    // Se muestra la cadena
+    printf("%s", nodo->str);
+    return;
+  }
+  // Se abre el conjunto o lista
+  if(primero) (tipo == SET) ? printf("{") : printf("[");
+  // Se muestra el dato
+  sl_mostrar_rec(nodo->dato, true);
+  if(nodo->sig == NULL) {
+    // Se cierra el conjunto o lista
     tipo == SET ? printf("}") : printf("]");
-  } else printf("<i> No hay datos");
+    return;
+  }
+  // Se muestra el siguiente elemento
+  printf(",");
+  sl_mostrar_rec(nodo->sig, false);
 }
 
-bool sl_es_vacio(struct sl_nodo * sl) {
+bool sl_es_vacio(struct NodoSLS * sl) {
   if(sl->dato != NULL) return false;
   else {
     if(DEBUG) printf("<?> Conjunto vacio detectado\n");
@@ -412,4 +442,14 @@ bool sl_es_vacio(struct sl_nodo * sl) {
   }
 }
 
-// CONJUNTOS
+// CONJUNTOS ///////////////////////////////////////////////////////////////////
+
+
+
+// LISTAS //////////////////////////////////////////////////////////////////////
+
+
+
+// CADENAS /////////////////////////////////////////////////////////////////////
+
+

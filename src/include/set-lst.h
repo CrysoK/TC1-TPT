@@ -12,13 +12,13 @@
 enum TIPO_NODO { SET, LST, STR };
 
 // Registro "nodo". Unidad de la estructura
-struct sl_nodo /* dataType */ {
+struct NodoSLS /* dataType */ {
   enum TIPO_NODO tipo; // nodeType
   union {
     char *str; // dataStr
     struct {
-      struct sl_nodo *dato; // data
-      struct sl_nodo *sig; // next
+      struct NodoSLS *dato; // data
+      struct NodoSLS *sig; // next
     };
   };
 };
@@ -28,39 +28,39 @@ struct sl_nodo /* dataType */ {
 // GENERAL
 
 // Crear nodos y relaciones entre ellos según una cadena
-struct sl_nodo *sl_nuevo(char * cadena);
+struct NodoSLS *sl_nuevo(char * cadena);
 // Mostrar en consola toda la estuctura indicada
-void            sl_mostrar(struct sl_nodo * sl);
+void            sl_mostrar(struct NodoSLS * set_lst);
 // Elimina una estructura completamente, liberando la memoria asignada
-void sl_free(struct sl_nodo ** ls);
+void sl_free(struct NodoSLS ** set_lst);
 
 // CONJUNTOS
 
 // Crea un conjunto vacío
-struct sl_nodo *set_vacio();
+struct NodoSLS *set_vacio();
 // Crea un conjunto compuesto por la unión de dos conjuntos (sin repetidos)
-struct sl_nodo *set_union(struct sl_nodo* set_1, struct sl_nodo* set_2);
+struct NodoSLS *set_union(struct NodoSLS* set_1, struct NodoSLS* set_2);
 // Crea un conjunto formado por la intersección de dos conjuntos (sin repetidos)
-struct sl_nodo *set_inter(struct sl_nodo* set_1, struct sl_nodo* set_2);
+struct NodoSLS *set_inter(struct NodoSLS* set_1, struct NodoSLS* set_2);
 // Retorna el conjunto partes de un conjunto (sin repetidos)
-struct sl_nodo *set_partes(struct sl_nodo* set);
+struct NodoSLS *set_partes(struct NodoSLS* set);
 // Indica si dos conjuntos son iguales
-bool            set_igual(struct sl_nodo* set_1, struct sl_nodo* set_2);
+bool            set_igual(struct NodoSLS* set_1, struct NodoSLS* set_2);
 // Indica si un elemento pertenece a un conjunto
-bool            set_perten(struct sl_nodo* set);
+bool            set_perten(struct NodoSLS* set);
 // Retorna la cantidad de elementos de un conjunto
-int             set_cardinal(struct sl_nodo* set);
+int             set_cardinal(struct NodoSLS* set);
 
 // LISTAS
 
 // Crea una lista vacia
-struct sl_nodo *lst_vacia();
+struct NodoSLS *lst_vacia();
 // Inserta un elemento al final de una lista
-void            lst_ins_final(struct sl_nodo ** lista, char * nuevo);
+void            lst_ins_final(struct NodoSLS ** lista, char * nuevo);
 
 // CADENAS
 
-// Retorna un elemento en formato cadena (sds)
-char           *str_return(struct sl_nodo * sl);
+// Retorna un elemento como cadena
+char           *str_return(struct NodoSLS * set_lst);
 
 #endif

@@ -51,7 +51,7 @@ int opcion(int, int);
 // MAIN ////////////////////////////////////////////////////////////////////////
 
 int main() {
-  struct sl_nodo *af;
+  struct NodoSLS *af;
   char * entrada;
   int opc;
 
@@ -107,19 +107,6 @@ int main() {
 
   sl_mostrar(af);
 
-  /*
-  printf("Ingrese el conjunto o cadena:\n");
-  char *entrada = sdsnew(sds_scan());
-  printf("Entrada: %s\n", entrada);
-  printf("\nAlmacenando entrada en la estructura... (%s:%d)", __FILE__, __LINE__);
-
-  af = sl_nuevo(entrada);
-
-  printf("\n\n");
-  sl_mostrar(af);
-  printf("\nCardinal = %d", set_cardinal(af));
-  printf("\n\n");
-  */
   sl_free(&af);
 
   pausa();
