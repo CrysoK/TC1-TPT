@@ -65,7 +65,7 @@ char          **splitString(char * string, int * sizeOfReturnedArray);
 // Quita espacios alrededor de un elemento
 void            deleteStringSpaces(char * string);
 // Verifica que la entrada sea un conjunto o una lista
-bool            isStringAListOrSet(char * string, bool isStringError);
+bool            isStringAListOrSet(char * string, bool isStringAnError);
 
 ////////////////////////////////////////////////////////////////////////////////
 // DEFINICIONES PÚBLICAS ///////////////////////////////////////////////////////
@@ -195,8 +195,8 @@ struct LSSNode *newLSFromStringRecursive(char *string) {
       if(rootNode == NULL) rootNode = newNode; // Si raiz aún no apunta a un nodo, inicializar
       else {
         linkNodeAsNext(getLastNode(rootNode), newNode);
-        
-        /* Inserción ordenada - Aún no implementado
+
+        /* [Inserción ordenada - Aún no implementado]
         if(stringType != SET) {
           // Enlazar newNode como el ultimo elemento del arbol
           linkNodeAsNext(getLastNode(rootNode), newNode);
@@ -250,10 +250,11 @@ void deleteStringSpaces(char *str) {
   sdstrim(str, " ");
 }
 
-bool isStringAListOrSet(char *str, bool isStringError) {
+bool isStringAListOrSet(char *str, bool isStringAnError) {
   enum NODE_TYPE stringType = getStringType(str);
   size_t len = sdslen(str);
-  bool isListOrSet = true;
+  bool isListOrSet = true; // Variable que se retornará
+  bool isFirstTime = true;
   int *countPointer = NULL;
   int setCount = 0;
   int listCount = 0;
@@ -268,8 +269,8 @@ bool isStringAListOrSet(char *str, bool isStringError) {
       countPointer = &setCount;
       break;
     case STR:
-      if(!isStringError) errorMessages(NOT_LS, __FILE__, __LINE__);
-      isListOrSet = false;
+      if(isStringAnError) errorMessages(NOT_LS, __FILE__, __LINE__);
+      return false; // Se omite el resto del análisis
       break;
   }
   // Control balance de {} y []
@@ -280,16 +281,19 @@ bool isStringAListOrSet(char *str, bool isStringError) {
       case '[': listCount++; break;
       case ']': listCount--; break;
     }
-    if(stringType != STR && *countPointer == 0) {
+    if(*countPointer == 0 && isFirstTime) {
       if(i == len - 1) {
         // Si es el último caracter, entonces es un conjunto/lista
         isListOrSet = true;
       } else { // Si no es el último, el conjunto "cerró" antes del final y solo es un elemento de str
-        if(!isStringError) errorMessages(NOT_LS, __FILE__, __LINE__);
         isListOrSet = false;// El char de cierre no está al final
+        if(isStringAnError) errorMessages(NOT_LS, __FILE__, __LINE__);
       }
+      // Se impide cambiar el valor de isListOrSet nuevamente
+      isFirstTime = false;
     }
   }
+  // Si falta un corchete o una llave, se considera no válido
   if(setCount != 0) {
     errorMessages(NOT_SET, __FILE__, __LINE__);
     isListOrSet = false;
@@ -508,27 +512,33 @@ int getDataPriority(struct LSSNode * data) {
 void addNodeInOrder(struct LSSNode *currentElement, struct LSSNode *new) {
   if(currentElement != NULL) {
     // El nodo existe
-    struct LSSNode *previousElement;
+    struct LSSNode *previousElement = NULL;
     int priorityNew = getDataPriority(new->data);
-    while(priorityNew > getDataPriority(currentElement->data) && currentElement != NULL) {
-      previousElement = currentElement;
-      currentElement = currentElement->next;
+    bool hasNext = true;
+    while(priorityNew > getDataPriority(currentElement->data) && hasNext) {
+      if(currentElement->next == NULL) hasNext = false;
+      else {
+        previousElement = currentElement;
+        currentElement = currentElement->next;
+      }
     }
-    if(currentElement == NULL) {
-      // no se encontraron elementos que deban ir después del nuevo
+    if(!hasNext) { // Si se llego al final y no hay mas elementos
+      // no se encontraron elementos que deban ir después del nuevo por lo tanto va al final
       linkNodeAsNext(previousElement, new);
     } else {
       switch(priorityNew) {
-        case 0: // Ambos elementos no tienen datos
+        case 0: // No tiene datos
+          if(priorityNew <= getDataPriority(currentElement)) {
 
+          }
           break;
-        case 1: // Ambos elementos son numeros
+        case 1: // Es un número
           break;
-        case 2: // Ambos elementos son cadenas
+        case 2: // Es una cadena
           break;
-        case 3: // Ambos elementos son conjuntos
+        case 3: // Es un conjunto
           break;
-        case 4: // Ambos elementos son listas
+        case 4: // Es una lista
           break;
       }
     }

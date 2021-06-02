@@ -97,8 +97,8 @@ int main() {
       appendStringToList(&automataFinito, userString);
       sdsfree(userString);
       break;
+      
     case 2:
-
       printf("Carga directa\n");
       printf("Ingrese el automata finito completo\n");
       printf("# ");
@@ -109,7 +109,7 @@ int main() {
       break;
   }
 
-  printf("Resultado\n");
+  printf("Resultado: ");
   printLS(automataFinito);
 
   freeLSS(&automataFinito);
