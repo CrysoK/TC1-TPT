@@ -3,13 +3,18 @@
 /*\
  * TRABAJO PRÁCTICO TRANSVERSAL - TEORÍA DE LA COMPUTACIÓN I
  *
+ * @ Ezequiel Lizandro Dzioba
+ *
  * PARTE 1
  * 1) Cargar un autómata finito "por partes": primero el conjunto de estados,
  * luego el alfabeto y así (la transición de estados cargarla por terna).
  * 2) Crear un árbol de que almacene al autómata finito ingresado.
  * 3) Mostrar el autómata finito.
+ * 
+ * NOTAS
+ * - No usar caracteres que no formen parte de ASCII estándar
  *
- * REFERENCIAS
+ * REFERENCIA
  * <x> Error
  * <!> Advertencia
  * <i> Información
@@ -31,7 +36,7 @@
 #include <stdbool.h> // Tipo de dato booleano estándar
 
 #include "include/auxlib.h" // Declaraciones y definiciones útiles
-#include "include/set-lst.h" // TAD Conjuntos y Listas
+#include "include/LSS.h" // TAD Conjuntos y Listas
 #include "include/sds/sds.h" // Librería externa "Simple Dynamic Strings"
 
 // DECLARACIONES ///////////////////////////////////////////////////////////////
@@ -39,21 +44,20 @@
 // Cadenas
 
 // Recibe la entrada desde consola y se almacena dinámicamente
-char *sds_scan();
+char *newUserString();
 // Elimina el contenido de una cadena sin liberar la memoria asignada
-void sds_clear(char * str);
-void del_line(int);
+void clearSds(char * str);
 
 // Interfaz
 
-int opcion(int, int);
+int newUserOption(int, int);
 
 // MAIN ////////////////////////////////////////////////////////////////////////
 
 int main() {
-  struct NodoSLS *af;
-  char * entrada;
-  int opc;
+  struct LSSNode *automataFinito;
+  char * userString;
+  int userOption;
 
   printf("<i> Para desactivar mensajes \"<?>\" defina DEBUG 0 <include/auxlib.h>\n");
   printf("Carga de un automata finito\n");
@@ -61,55 +65,56 @@ int main() {
   printf("1. Por partes\n");
   printf("2. Todo de una vez (test)\n");
 
-  opc = opcion(1, 2);
+  userOption = newUserOption(1, 2);
 
-  switch(opc) {
+  switch(userOption) {
     case 1:
       printf("Carga por partes\n# ");
-      af = lst_vacia();
+      automataFinito = newEmptyList();
 
       printf("Ingrese el conjunto de estados\n# ");
-      entrada = sds_scan();
-      lst_ins_final(&af, entrada);
-      sdsfree(entrada);
+      userString = newUserString();
+      appendStringToList(&automataFinito, userString);
+      sdsfree(userString);
 
       printf("Ingrese el conjunto de simbolos del alfabeto\n# ");
-      entrada = sds_scan();
-      lst_ins_final(&af, entrada);
-      sdsfree(entrada);
+      userString = newUserString();
+      appendStringToList(&automataFinito, userString);
+      sdsfree(userString);
 
       printf("Ingrese el conjunto de transiciones\n# ");
-      entrada = sds_scan();
-      lst_ins_final(&af, entrada);
-      sdsfree(entrada);
+      userString = newUserString();
+      appendStringToList(&automataFinito, userString);
+      sdsfree(userString);
 
       printf("Ingrese el estado inicial\n# ");
-      entrada = sds_scan();
-      lst_ins_final(&af, entrada);
-      sdsfree(entrada);
+      userString = newUserString();
+      appendStringToList(&automataFinito, userString);
+      sdsfree(userString);
 
       printf("Ingrese el conjunto de estados de aceptacion\n# ");
-      entrada = sds_scan();
-      lst_ins_final(&af, entrada);
-      sdsfree(entrada);
+      userString = newUserString();
+      appendStringToList(&automataFinito, userString);
+      sdsfree(userString);
       break;
     case 2:
 
       printf("Carga directa\n");
       printf("Ingrese el automata finito completo\n");
       printf("# ");
-      entrada = sds_scan();
-      af = sl_nuevo(entrada);
-      printf("Entrada: %s\n", entrada);
-      sdsfree(entrada);
+      userString = newUserString();
+      automataFinito = newLSFromString(userString);
+      // printf("Entrada (test): %s\n", userString);
+      sdsfree(userString);
       break;
   }
 
-  sl_mostrar(af);
+  printf("Resultado\n");
+  printLS(automataFinito);
 
-  sl_free(&af);
+  freeLSS(&automataFinito);
 
-  pausa();
+  pauseProgram();
 
   return 0;
 }
@@ -119,42 +124,35 @@ int main() {
 // CADENAS
 
 // Ingreso de una cadena de cualquier tamaño (asignación de memoria dinámica)
-char *sds_scan() {
-  bool no_ascii = false;
-  size_t bloque = 16;
-  char * str;
-  char * ret;
-  char caracter;
-  size_t tam = 0;
+char *newUserString() {
+  bool isAscii = true;
+  size_t memoryBlock = 16;
+  char * string;
+  char * resultString;
+  char character;
+  size_t size = 0;
 
-  str = realloc(NULL, sizeof * str * bloque);
-  if(!str) return str; // ERROR
-  while(EOF != (caracter = fgetc(stdin)) && caracter != '\n') {
-    str[tam++] = caracter;
-    if(tam == bloque) {
-      bloque *= 2;
-      str = realloc(str, sizeof * str * (bloque));
-      if(!str) return str; // ERROR
+  string = realloc(NULL, sizeof * string * memoryBlock);
+  if(!string) return string; // ERROR
+  while(EOF != (character = fgetc(stdin)) && character != '\n') {
+    string[size++] = character;
+    if(size == memoryBlock) {
+      memoryBlock *= 2;
+      string = realloc(string, sizeof * string * (memoryBlock));
+      if(!string) return string; // ERROR
     }
-    if(caracter < 33 || caracter > 126) no_ascii = true;
+    if(character < 32 || character > 126) isAscii = false;
   }
-  str[tam++] = '\0';
-  if(no_ascii) printf("<!> Ha ingresado caracteres que pueden provocar errores\n");
+  string[size++] = '\0';
+  if(!isAscii) printf("<!> Ha ingresado caracteres que pueden provocar errores\n");
 
-  ret = sdsnew(str);
-  free(str);
-  return ret;
+  // Convierte a cadena compatible con las funciones de sds
+  resultString = sdsnew(string);
+  free(string);
+  return resultString;
 }
 
-/* Elimina la linea pero solo funciona si no se imprimió "\n" antes */
-void del_line(int n) {
-  printf("\r");
-  for(int i = 1; i <= n; i++) {
-    printf(" ");
-  }
-}
-
-void sds_clean(char *str) {
+void clearSds(char *str) {
   str[0] = '\0';
   // Actualiza el tamaño de la sds a 0
   sdsupdatelen(str);
@@ -164,12 +162,12 @@ void sds_clean(char *str) {
 
 // INTERFAZ
 
-int opcion(int min, int max) {
+int newUserOption(int min, int max) {
   int x = -1;
   while(1) {
     printf("# ");
     scanf("%d", &x);
-    cl_stdin();
+    clearStdIn();
     if(x < min || x > max) {
       printf("<!> Opcion invalida\n");
     } else return x;

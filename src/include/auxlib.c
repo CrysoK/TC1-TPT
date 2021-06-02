@@ -6,7 +6,7 @@
 
 /*
 #ifdef __unix__
-void cl_stdin() { __fpurge(stdin); }
+void clearStdIn() { __fpurge(stdin); }
 #endif
 */
 
@@ -14,26 +14,26 @@ void cl_stdin() { __fpurge(stdin); }
 
 /*
 #ifdef _WIN32
-void cl_stdin() { fflush(stdin); }
+void clearStdIn() { fflush(stdin); }
 #endif
 */
 
 // AMBOS ///////////////////////////////////////////////////////////////////////
 
-void pausa() {
+void pauseProgram() {
   printf("Presione ENTER para continuar . . . \n");
   char c;
-  // cl_stdin(); // No sé si quien llama esta función, ya limpió el buffer
+  // clearStdIn(); // No sé si quien llama esta función, ya limpió el buffer
   scanf("%c", &c);
-  // cl_stdin(); // Limpio el buffer al finalizar el llamado
+  // clearStdIn(); // Limpio el buffer al finalizar el llamado
   
 }
 
-void cl_consola() {
+void clearConsole() {
   system("clear || cls");
 }
 
-void cl_stdin(){
+void clearStdIn(){
   char c;
   while((c = getchar()) != '\n' && c != EOF);
 }

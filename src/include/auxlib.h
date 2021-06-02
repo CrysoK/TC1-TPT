@@ -16,15 +16,15 @@
 /* DEBUG
  * 1 para mensajes extra sobre el funcionamiento del programa
  * 0 para desactivar */
-#define DEBUG 1
+#define DEBUG 0
 
 // PROTOTIPOS //////////////////////////////////////////////////////////////////
 
 /* Elimina el buffer de stdin */
-void cl_stdin();
+void clearStdIn();
 /* Ejecuta un comando para limpiar la consola */
-void cl_consola();
+void clearConsole();
 /* Pide presionar ENTER para continuar */
-void pausa();
+void pauseProgram();
 
 #endif
