@@ -16,7 +16,7 @@ DIR_OBJ:=obj/
 # Extensión de los archivos fuente
 EXT:=c
 # Nombre del ejecutable resultante
-TARGET:=main
+TARGET:=TPT
 
 ################################## COMPILADOR ##################################
 
