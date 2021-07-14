@@ -47,16 +47,21 @@ enum NODE_TYPE  getStringType(char * string);
 bool            isStringElementOfLS(struct LSSNode *listOrSet, char * elementAsString);
 //
 bool            isStringANumber(char * string);
+//
+int             getSizeOfLS(struct LSSNode *listOrSet);
 
-// CONJUNTOS
+// NODOS SET
 
-void            addNodeInOrder(struct LSSNode *firstElement, struct LSSNode *newElement);
+//
+int            addNodeInOrder(struct LSSNode **firstElement, struct LSSNode *newElement);
+//
+int            getDataPriority(struct LSSNode * dataNode);
 
-// LISTAS
+// NODOS LST
 
 
 
-// CADENAS
+// NODOS STR
 
 //
 struct LSSNode *newStringNode(char * string);
@@ -74,20 +79,20 @@ bool            isStringAListOrSet(char * string, bool isStringAnError);
 // GENERAL /////////////////////////////////////////////////////////////////////
 
 // MARCA #1
-struct LSSNode *newLSFromString(char *entrada) {
+struct LSSNode *newLSFromString(char *input) {
   // Validacion de la cadena de entrada
-  if(!isStringAListOrSet(entrada, true)) return NULL;
-  return newLSFromStringRecursive(entrada);;
+  if(!isStringAListOrSet(input, true)) return NULL;
+  // Retorna la creación recursiva
+  return newLSFromStringRecursive(input);;
 }
 
-void printLS(struct LSSNode * nodo) {
+void printLS(struct LSSNode * node) {
   // Comprobación de que exista al menos un nodo
-  if(nodo == NULL) {
-    printf("<i> No hay datos\n");
+  if(node == NULL) {
+    printf("No hay datos");
     return;
   }
-  printLSRecursive(nodo, true);
-  printf("\n");
+  printLSRecursive(node, true);
 }
 
 void freeLSS(struct LSSNode ** sl) {
@@ -107,25 +112,33 @@ void freeLSS(struct LSSNode ** sl) {
   *sl = NULL;
 }
 
+struct LSSNode *getElementByPos(struct LSSNode **ls, int pos) {
+  if(!*ls) return NULL;
+  if((*ls)->type == STR) return NULL;
+  // Para no modificar la variable fuera de la función
+  struct LSSNode *currentElement = *ls;
+  int currentPos = 1;
+  // Ciclo que se detiene al llegar a pos, o al último elemento
+  while(currentPos < pos && !currentElement) {
+    currentElement = currentElement->next;
+    currentPos++;
+  }
+  // Si existe el elemento, retornarlo
+  if(currentElement) return currentElement->data;
+  else return currentElement;
+}
+
 // CONJUNTOS ///////////////////////////////////////////////////////////////////
 
-int getSetCardinal(struct LSSNode *nodo) {
-  // Control conjunto vacío
-  if(isEmptyLS(nodo)) return 0;
-
-  int cnt = 0;
-  while(nodo != NULL) {
-    cnt++;
-    nodo = nodo->next;
-  }
-  return cnt;
+int getSetCardinal(struct LSSNode *node) {
+  return getSizeOfLS(node);
 }
 
 // LISTAS //////////////////////////////////////////////////////////////////////
 
 struct LSSNode *newEmptyList() {
-  struct LSSNode * nuevo = newLSNode(LST);
-  return nuevo;
+  struct LSSNode * new = newLSNode(LST);
+  return new;
 }
 
 void appendStringToList(struct LSSNode ** lista, char * nuevo) {
@@ -144,6 +157,10 @@ void appendStringToList(struct LSSNode ** lista, char * nuevo) {
   }
   if(!isEmptyLS(*lista)) linkNodeAsNext(getLastNode(*lista), newLSNode(LST));
   linkNodeAsData(getLastNode(*lista), data);
+}
+
+int getListSize(struct LSSNode *list) {
+  return getSizeOfLS(list);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,20 +210,14 @@ struct LSSNode *newLSFromStringRecursive(char *string) {
         if(sdscmp(elementsArray[index], "") != 0) linkNodeAsData(newNode, newStringNode(elementsArray[index]));
       }
       if(rootNode == NULL) rootNode = newNode; // Si raiz aún no apunta a un nodo, inicializar
-      else {
+      else if(stringType != SET) {
+        // Enlazar newNode como el ultimo elemento del arbol
         linkNodeAsNext(getLastNode(rootNode), newNode);
-
-        /* [Inserción ordenada - Aún no implementado]
-        if(stringType != SET) {
-          // Enlazar newNode como el ultimo elemento del arbol
-          linkNodeAsNext(getLastNode(rootNode), newNode);
-        } else {
-          // Insertar el nuevo nodo de forma ordenada
-          addNodeInOrder(rootNode, newNode);
-        }
-        */
+      } else {
+        // Insertar el nuevo nodo de forma ordenada solo cuando es elemento de un conjunto
+        addNodeInOrder(&rootNode, newNode);
       }
-    } // Fin del ciclo
+    } // <- Fin del ciclo
   } else { // No hay elementos
     // ERROR: Cantidad de elementos = 0 ???
   }
@@ -225,9 +236,10 @@ struct LSSNode *newLSNode(enum NODE_TYPE type) {
 
 struct LSSNode *newStringNode(char *str) {
   struct LSSNode *nuevo;
-  // nuevo = (struct LSSNode *)malloc(sizeof(struct LSSNode));
   nuevo = malloc(sizeof * nuevo);
   nuevo->type = STR;
+  // Eliminar espacios alrededor del elemento
+  deleteStringSpaces(str);
   nuevo->str = sdsnew(str);
   return nuevo;
 }
@@ -252,7 +264,7 @@ void deleteStringSpaces(char *str) {
 
 bool isStringAListOrSet(char *str, bool isStringAnError) {
   enum NODE_TYPE stringType = getStringType(str);
-  size_t len = sdslen(str);
+  size_t len = strlen(str);
   bool isListOrSet = true; // Variable que se retornará
   bool isFirstTime = true;
   int *countPointer = NULL;
@@ -308,62 +320,21 @@ bool isStringAListOrSet(char *str, bool isStringAnError) {
 enum NODE_TYPE getStringType(char *str) {
   switch(str[0]) {
     case '{':
-      if(DEBUG) printf("<?> Tipo \"conjunto\" detectado ('{')\n");
+      if(DEBUG) printf("<?> Tipo SET detectado ('{')\n");
       return SET;
     case '[':
-      if(DEBUG) printf("<?> Tipo \"lista\" detectado ('[')\n");
+      if(DEBUG) printf("<?> Tipo LST detectado ('[')\n");
       return LST;
     default:
-      if(DEBUG) printf("<?> Tipo \"cadena\" detectado ('%c')\n", str[0]);
+      if(DEBUG) printf("<?> Tipo STR detectado ('%c')\n", str[0]);
       return STR;
   }
 }
 
-/*
-/ Retorna true si str es un conjunto o una cadena, comprobando si el ultimo
- * caracter es el cierre del primero, usando stack /
-bool isStringValid(char *str) {
-  int openLSCount1 = 0, openLSCount2; // Se crea el contador
-  char openSymbol1, closeSymbol1; // Caracter de apertura y cierre
-  bool isListOrSet = true;
-  switch(getStringType(str)) {
-    case STR: // No es conjunto ni lista
-      errorMessages(NOT_LS, __FILE__, __LINE__);
-      return false;
-      break;
-      // Es conjunto, se usan los caracteres correspondientes
-    case SET: openSymbol1 = '{'; closeSymbol1 = '}'; break;
-      // Es lista, se usan los caracteres correspondientes
-    case LST: openSymbol1 = '['; closeSymbol1 = ']'; break;
-  }
-  // Se analiza caracter por caracter
-  for(int i = 0; i < sdslen(str); i++) {
-    // Si el caracter es el de apertura, se incrementa el contador
-    if(str[i] == openSymbol1) openLSCount1++;
-    // Si el caracter es el de cierre:
-    else if(str[i] == closeSymbol1) {
-      // Se decrementa el contador
-      openLSCount1--;
-      // Si el contador es cero:
-      if(openLSCount1 == 0) {
-        // Si es el último caracter, entonces es un conjunto/lista
-        if(i == sdslen(str) - 1) return true; // El char de cierre esta al final
-        // Si no es el último, el conjunto "cerró" antes del final y solo es un elemento de str
-        else { // El char de cierre no está al final
-          errorMessages(NOT_LS, __FILE__, __LINE__);
-          return false;
-        }
-      }
-    }
-  }
-  return false; // ERROR: Faltan llaves o corchetes
-}
-*/
-
 // Separa str en un array donde cada posición es un elemento
 char **splitString(char *str, int *cant) {
   char **array; // Array
-  int lar = sdslen(str); // Largo de la cadena str
+  int lar = strlen(str); // Largo de la cadena str
   int elem = 0; // Cantidad de elementos del array
   int mem = 2; // Cantidad de "espacios" que se añaden al asignar memoria
   int ini = 0; // Inicio de cada elemento de str
@@ -482,13 +453,79 @@ bool isEmptyLS(struct LSSNode * sl) {
 }
 
 bool isStringANumber(char * string) {
-  int index = 0;
-  int lenght = sdslen(string);
+  bool isDecimal = false;
   bool isNumber = true;
-  while(index < lenght && isNumber == true) {
-    if(string[index] < '0' || string[index] > '9') isNumber = false;
+  int index = 0;
+  // ASCII , - . / 0 1 2 3 4 5 6 7 8 9 :
+  while(string[index] != '\0' && isNumber == true) {
+    // Posee caracteres válidos?
+    if(string[index] < '-' || string[index] > '9' || string[index] == '/') isNumber = false;
+    // Solo puede haber un signo negativo y debe estar al inicio
+    if(string[index] == '-' && index != 0) isNumber = false;
+    // Solo puede haber un punto
+    if(string[index] == '.') {
+      if(!isDecimal) isDecimal = true;
+      else isNumber = false;
+    }
+    // Para analizar el siguiente caracter
+    index++;
   }
   return isNumber;
+}
+
+int getSizeOfLS(struct LSSNode *node) {
+  // Control conjunto vacío
+  if(isEmptyLS(node)) return 0;
+
+  int cnt = 0;
+  while(node != NULL) {
+    cnt++;
+    node = node->next;
+  }
+  return cnt;
+}
+
+//  1: node1 > node2
+// -1: node1 < node2
+//  0: lss1 = set2
+int compareNodes(struct LSSNode *node1, struct LSSNode *node2) {
+  int returnValue = 0;
+  int type1 = getDataPriority((*node1).data);
+  int type2 = getDataPriority((*node2).data);
+  // Comparación de prioridades
+  if(type1 > type2) returnValue = 1;
+  else if(type1 < type2) returnValue = -1;
+  // Comparación de números
+  else if(type1 == 1) {
+    int number1 = atof(node1->data->str);
+    int number2 = atof(node2->data->str);
+    if(number1 > number2) returnValue = 1;
+    else if(number1 < number2) returnValue = -1;
+    else if(node1->next != NULL && node2->next != NULL) returnValue = compareNodes(node1->next, node2->next);
+    else if(node1->next != NULL && node2->next == NULL) returnValue = 1;
+    else if(node1->next == NULL && node2->next != NULL) returnValue = -1;
+    // Comparación de cadenas
+  } else if(type1 == 2) {
+    if(sdscmp(node1->data->str, node2->data->str) > 0) returnValue = 1;
+    else if(sdscmp(node1->data->str, node2->data->str) < 0) returnValue = -1;
+    else if(node1->next != NULL && node2->next != NULL) return compareNodes(node1->next, node2->next);
+    else if(node1->next != NULL && node2->next == NULL) returnValue = 1;
+    else if(node1->next == NULL && node2->next != NULL) returnValue = -1;
+    // Comparación de conjuntos y listas
+  } else if(type1 == 3 || type1 == 4) {
+    int size1 = getSizeOfLS(node1->data);
+    int size2 = getSizeOfLS(node2->data);
+    if(size1 > size2) returnValue = 1;
+    else if(size1 < size2) returnValue = -1;
+    else {
+      int resComp = compareNodes(node1->data, node2->data);
+      if(resComp < 0) returnValue = 1;
+      else if(resComp > 0) returnValue = -1;
+      else if(node1->next != NULL) returnValue = compareNodes(node1->next, node2->next);
+    }
+  }
+  if(DEBUG) printf("<?> El resultado de \"%s\" es %d\n", __func__, returnValue);
+  return returnValue;
 }
 
 // CONJUNTOS ///////////////////////////////////////////////////////////////////
@@ -498,54 +535,77 @@ int getDataPriority(struct LSSNode * data) {
   int dataType;
   if(data->type == STR) dataType = isStringANumber(data->str) ? 1 : 2;
   else dataType = (data->type == SET) ? 3 : 4;
+  if(DEBUG) printf("<?> La funcion \"%s\" retorna %d\n", __func__, dataType);
   return dataType;
 }
 
+/* {1,a,{1,a,[b]}} {1,a,{1,a,[c]}}
+   {             } {             } =
+    ^               ^              =
+      ^               ^            =
+        {        }      {        } =
+         ^               ^         =
+           ^               ^       =
+             [ ]             [ ]   =
+              ^               ^    <
+   {             } {             } <
+*/
 
-
-// 0 - Primero el vacío
-// 1 - Si es numero, primero el menor
-// 2 - Si no es numero, en orden alfabético
-// 3 - Si no es cadena, primero conjuntos y luego listas
-// 4 - Si es un conjunto o una lista, primero el que tenga menos elementos
+// SOLO USAR EN CONJUNTOS
+// - Primero el vacío
+// - Si es numero, primero el menor
+// - Si no es numero, en orden alfabético
+// - Si no es cadena, primero conjuntos y luego listas
+// - Si es un conjunto o una lista, primero el que tenga menos elementos
+// - Si tienen la misma cantidad de elementos, ordenar según sus elementos
 // En cualquier caso, si son iguales, no insertar
-void addNodeInOrder(struct LSSNode *currentElement, struct LSSNode *new) {
-  if(currentElement != NULL) {
-    // El nodo existe
-    struct LSSNode *previousElement = NULL;
-    int priorityNew = getDataPriority(new->data);
-    bool hasNext = true;
-    while(priorityNew > getDataPriority(currentElement->data) && hasNext) {
-      if(currentElement->next == NULL) hasNext = false;
-      else {
-        previousElement = currentElement;
-        currentElement = currentElement->next;
-      }
-    }
-    if(!hasNext) { // Si se llego al final y no hay mas elementos
-      // no se encontraron elementos que deban ir después del nuevo por lo tanto va al final
-      linkNodeAsNext(previousElement, new);
-    } else {
-      switch(priorityNew) {
-        case 0: // No tiene datos
-          if(priorityNew <= getDataPriority(currentElement)) {
-
-          }
-          break;
-        case 1: // Es un número
-          break;
-        case 2: // Es una cadena
-          break;
-        case 3: // Es un conjunto
-          break;
-        case 4: // Es una lista
-          break;
-      }
-    }
-  } else {
-    // El nodo no existe
-    // ERROR, al menos tiene que ser un conjunto vacío
+int addNodeInOrder(struct LSSNode **firstNode, struct LSSNode *newNode) {
+  if(*firstNode == NULL) {
+    printf("<x> El primer argumento de \"%s\" debe ser un conjunto <%s:%d>\n", __func__, __FILE__, __LINE__);
+    return 0;
   }
+  struct LSSNode *currentNode = *firstNode;
+  struct LSSNode *previousNode = *firstNode;
+  int currentPos = 1;
+  int cmpNodes = compareNodes(newNode, currentNode);
+  // Búsqueda de la posición
+  while(cmpNodes > 0 && currentNode->next != NULL) {
+    if(DEBUG) printf("<?> \"%s\" es mayor que \"%s\"\n", newNode->data->str, currentNode->data->str);
+    previousNode = currentNode;
+    currentNode = currentNode->next;
+    currentPos++;
+    cmpNodes = compareNodes(newNode, currentNode);
+  }
+  if(cmpNodes == 0) {
+    printf("<i> Eliminando elemento repetido \"");
+    printLS(newNode->data); printf("\"\n");
+    freeLSS(&newNode);
+    return 0;
+  }
+  // Caso especial para la primera posicion (raiz)
+  if(currentPos == 1) {
+    if(cmpNodes < 0) {
+      newNode->next = *firstNode;
+      *firstNode = newNode;
+    } else {
+      newNode->next = (*firstNode)->next;
+      (*firstNode)->next = newNode;
+      currentPos++;
+    }
+  } else if(cmpNodes < 0) {
+    newNode->next = currentNode;
+    previousNode->next = newNode;
+  } else {
+    newNode->next = currentNode->next;
+    currentNode->next = newNode;
+    currentPos++;
+  }
+  if(DEBUG) {
+    printf("<?> Elemento \"");
+    printLS(newNode->data);
+    printf("\" insertado en la posicion %d\n", currentPos);
+  }
+  return currentPos;
 }
 
 // LISTAS //////////////////////////////////////////////////////////////////////

@@ -35,6 +35,8 @@ void            printLS(struct LSSNode *listOrSet);
 void            freeLSS(struct LSSNode **listOrSetOrString);
 // 
 bool            isEmptyLS(struct LSSNode *set);
+// Devuelve un elemento según su posición. El elemento puede ser modificado.
+struct LSSNode *getElementByPos(struct LSSNode **listOrSet, int elementPosition);
 
 // CONJUNTOS
 
