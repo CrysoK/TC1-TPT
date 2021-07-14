@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Determinar si una cadena es aceptada por un autómtata finito.
+- Determinar si una cadena es aceptada por un autómata finito.
 - Convertir AFND en AFD.
 
 ## [0.6.1](https://github.com/CrysoK/TCI_TPT/releases/tag/0.6.1) - 2021-07-13
