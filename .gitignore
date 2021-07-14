@@ -4,3 +4,4 @@ old
 *.exe
 *.txt
 *.o
+*.d
