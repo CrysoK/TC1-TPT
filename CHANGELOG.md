@@ -6,7 +6,7 @@
 - Validación de un **AF** mientras el usuario lo va ingresando.
 - Visualización de la estructura de datos utilizada.
 
-## [0.7.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.7.0) - 2021-07-24
+## [0.7.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.7.0) - 2021-07-25
 
 ### General
 
