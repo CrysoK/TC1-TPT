@@ -62,7 +62,7 @@ Acepta: cadena vacía, `00110101`
 
 No acepta: `111`, `110111`, `1000`, `01`
 
-#### Cadenas que terminan en "00"
+#### Cadenas que terminan en `00`
 
 ```text
 [{I,0,00},{0,1},{[I,1,{I}],[I,0,{0}],[0,1,{I}],[0,0,{00}],[00,1,{I}],[00,0,{00}]},I,{00}]
@@ -102,7 +102,7 @@ No acepta: `111`, `110111`, `1000`, `01`
 [{p0,p1,p2},{a,b},{[p0,a,{}],[p0,b,{p2}],[p1,a,{p0}],[p1,b,{p1,p2}],[p2,a,{p0,p1,p2}],[p2,b,{}]},{p0},{p1}]
 ```
 
-#### Lenguaje invertido de [este](#cadenas-formadas-por-n-veces-a-y-m-veces-b-tal-que-n-m-mod-3-1`) autómata
+#### Lenguaje invertido de [este](#cadenas-formadas-por-n-veces-a-y-m-veces-b-tal-que-n--m-mod-3--1) autómata
 
 ```text
 [{s0,q0,q1,q2,q3,q4,q5,q6},{a,b},{[q1,a,{q0,q3}],[q2,a,{q1}],[q3,a,{q2}],[q4,b,{q0,q3,q6}],[q5,b,{q4,q1}],[q6,b,{q2,q5}],[s0,a,{q0,q3}],[s0,b,{q3,q0,q6}]},{s0},{q0}]
