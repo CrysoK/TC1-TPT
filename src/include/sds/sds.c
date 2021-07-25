@@ -39,6 +39,12 @@
 #include "sds.h"
 #include "sdsalloc.h"
 
+int sdsll2str(char *s, long long value);
+int sdsull2str(char *s, unsigned long long v);
+int is_hex_digit(char c);
+int hex_digit_to_int(char c);
+
+
 const char *SDS_NOINIT = "SDS_NOINIT";
 
 static inline int sdsHdrSize(char type) {

@@ -22,8 +22,16 @@ TARGET:=TPT
 
 # Compilador
 CC:=gcc
-# Opciones para C y C++ | # -DLOG_USE_COLOR es para logc
-COMMONFLAGS:=-Wall -O2 -ggdb #-ggdb
+# Opciones para C y C++ |-ggdb para memory leaks | -Werror
+COMMONFLAGS:=-O2 -g -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align\
+  -Wswitch-enum -Wunreachable-code -Wstrict-prototypes -Wmissing-prototypes    \
+  -Wstrict-prototypes -Wwrite-strings -Waggregate-return -Wcast-qual -Wl,-z,now\
+  -fasynchronous-unwind-tables -fexceptions -fpie -Wl,-pie -fpic -shared       \
+  -Wno-discarded-qualifiers -D_FORTIFY_SOURCE=2 -D_GLIBCXX_ASSERTIONS          \
+  -fstack-clash-protection -grecord-gcc-switches -fcf-protection -pipe         \
+  -Werror=format-security -Werror=implicit-function-declaration -Wl,-z,defs    \
+  -Wl,-z,relro                                                                 \
+  -D DEBUG #Comentar esta linea para eliminar mensajes extra
 # Opciones solo para C
 CFLAGS=$(COMMONFLAGS)
 # Opciones solo para C++
