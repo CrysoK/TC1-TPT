@@ -30,8 +30,7 @@ COMMONFLAGS:=-O2 -ggdb -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-ali
   -Wno-discarded-qualifiers -D_FORTIFY_SOURCE=2 -D_GLIBCXX_ASSERTIONS          \
   -fstack-clash-protection -grecord-gcc-switches -fcf-protection -pipe         \
   -Werror=format-security -Werror=implicit-function-declaration -Wl,-z,defs    \
-  -Wl,-z,relro                                                                 \
-  -D DEBUG #Comentar esta linea para eliminar mensajes extra
+  -Wl,-z,relro
 # Opciones solo para C
 CFLAGS=$(COMMONFLAGS)
 # Opciones solo para C++

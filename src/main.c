@@ -3,8 +3,6 @@
 /*\
  * TRABAJO PRÁCTICO TRANSVERSAL - TEORÍA DE LA COMPUTACIÓN I
  *
- * @ Ezequiel Lizandro Dzioba
- *
  * PARTE 1
  * 1) Cargar un autómata finito "por partes": primero el conjunto de estados,
  * luego el alfabeto y así (la transición de estados cargarla por terna).
@@ -43,12 +41,7 @@
 
 // PRECOMPILADOR ///////////////////////////////////////////////////////////////
 
-#ifdef DEBUG
-#undef DEBUG
-#define DEBUG true
-#else
-#define DEBUG false
-#endif
+#define DEBUG 0
 
 #include <stdio.h> // Entrada y salida estándar
 #include <stdlib.h> // Librería general estándar
