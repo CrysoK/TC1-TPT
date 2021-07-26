@@ -23,7 +23,7 @@ TARGET:=TPT
 # Compilador
 CC:=gcc
 # Opciones para C y C++ |-ggdb para memory leaks | -Werror
-COMMONFLAGS:=-O2 -g -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align\
+COMMONFLAGS:=-O2 -ggdb -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align\
   -Wswitch-enum -Wunreachable-code -Wstrict-prototypes -Wmissing-prototypes    \
   -Wstrict-prototypes -Wwrite-strings -Waggregate-return -Wcast-qual -Wl,-z,now\
   -fasynchronous-unwind-tables -fexceptions -fpie -Wl,-pie -fpic -shared       \
