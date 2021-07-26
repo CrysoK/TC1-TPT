@@ -2,9 +2,21 @@
 
 ## Información
 
-### [Registro de cambios](CHANGELOG.md)
+### ¿Cómo usar el programa?
+
+#### Windows
+
+Puedes descargar el ejecutable de la última versión [aquí](https://github.com/CrysoK/TCI_TPT/releases).
+
+También puedes compilar el programa por tu cuenta. Lo más simple es usar `MakeWindows.cmd`. [Más información](https://github.com/CrysoK/Win-Linux_C_Makefile).
+
+#### Linux
+
+Debes compilar el programa por tu cuenta. Lo más simple es usar `MakeLinux.sh`. [Más información](https://github.com/CrysoK/Win-Linux_C_Makefile).
 
 ## Ejemplos de AF
+
+Puedes cargar cualquiera de estos AF en el programa con el método de carga directa.
 
 ### AFD
 
