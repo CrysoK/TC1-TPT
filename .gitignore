@@ -5,5 +5,4 @@ old
 *.txt
 *.o
 *.d
-*.dot
 *.svg
