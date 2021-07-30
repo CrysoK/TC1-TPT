@@ -100,11 +100,11 @@ Implementar el [TAD](#tad) descripto utilizando la estructura de datos propuesta
 
 Puede descargar el ejecutable de la última versión [aquí](https://github.com/CrysoK/TCI_TPT/releases).
 
-También puede compilar el programa por su cuenta. Lo más simple es usar `MakeWindows.cmd`. [Más información](https://github.com/CrysoK/Win-Linux_C_Makefile).
+También puede compilar el programa por su cuenta. Lo más simple es usar `MakeWindows.cmd`. [Más información](https://github.com/CrysoK/C-Makefile).
 
 ### Linux
 
-Debe compilar el programa por su cuenta. Lo más simple es usar `MakeLinux.sh`. [Más información](https://github.com/CrysoK/Win-Linux_C_Makefile).
+Debe compilar el programa por su cuenta. Lo más simple es usar `MakeLinux.sh`. [Más información](https://github.com/CrysoK/C-Makefile).
 
 ## ¿Cómo usar?
 
