@@ -2,14 +2,15 @@
 
 ## Unreleased
 
+- Visualización mejorada.
 - Validación de un **AF** mientras el usuario lo va ingresando.
 
-## [0.8.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.7.0) - 2021-07-00
+## [0.8.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.8.0) - 2021-07-29
 
 ### General
 
 - Convertir **AFND** en **AFD**.
-- Visualización de la estructura de datos utilizada.
+- Generación de un archivo `.dot` que puede ser interpretado por [Graphviz](https://graphviz.org/).
 
 ### Módulos
 
