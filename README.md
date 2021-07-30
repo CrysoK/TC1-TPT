@@ -2,6 +2,8 @@
 
 # Trabajo práctico transversal
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e2ba4a6d2eee4a20ada46eb7e8c1af6b)](https://app.codacy.com/gh/CrysoK/TC1-TPT?utm_source=github.com&utm_medium=referral&utm_content=CrysoK/TC1-TPT&utm_campaign=Badge_Grade_Settings)
+
 ## Descripción
 
 > ¿Mucho texto? Avanza hasta [instalación](#instalaci%C3%B3n) o [cómo usar](#c%C3%B3mo-usar).
