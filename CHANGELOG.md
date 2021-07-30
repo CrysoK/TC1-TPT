@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Planeado
 
 - Visualización mejorada.
 - Validación de un **AF** mientras el usuario lo va ingresando.
@@ -9,8 +9,8 @@
 
 ### General
 
-- Convertir **AFND** en **AFD**.
-- Generación de un archivo `.dot` que puede ser interpretado por [Graphviz](https://graphviz.org/).
+- Conversión de **AFND** en **AFD**.
+- Generación de un archivo (`dot/LSS.dot`) que puede ser interpretado por [Graphviz](https://graphviz.org/) para visualizar el **AF** cargado.
 
 ### Módulos
 
