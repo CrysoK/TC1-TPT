@@ -43,7 +43,7 @@ struct LSSNode *newLSNode(enum NODE_TYPE typeToCreate);
 //
 void            printLsRecursive(struct LSSNode *listOrSet, bool isFirstElement, int *count);
 //
-void genDotNodes(FILE *file, struct LSSNode *actual, int *id, struct LSSNode *previo, int idPrev, int dataOrNext);
+void            genDotNodes(FILE *file, struct LSSNode *actual, int *id, struct LSSNode *previo, int idPrev, int dataOrNext);
 //
 void            linkNodeAsData(struct LSSNode *node, struct LSSNode *newDataNode);
 //
@@ -166,7 +166,7 @@ void genDotNodes(FILE *file, struct LSSNode *actual, int *id, struct LSSNode *pr
 void generateDotFile(struct LSSNode *lss) {
 
   // open file in write mode
-  FILE *file = fopen("E:\\Google_Drive\\Academico\\UNSa\\Year_2\\Teoria_de_la_computacion_1\\Trabajo_practico_transversal\\tpt_parte_2\\dot\\LSS.dot", "w");
+  FILE *file = fopen("LSS.dot", "w");
   if(file == NULL) {
     printf("<x> No se pudo abrir el archivo\n");
     return;

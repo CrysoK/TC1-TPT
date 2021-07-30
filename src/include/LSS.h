@@ -1,7 +1,7 @@
 #ifndef LSS_H
 #define LSS_H
 
-#define DEBUG 1
+#define DEBUG 0
 
 // Librería estándar que incluye el tipo de dato booleano
 #include <stdbool.h>
