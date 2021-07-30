@@ -1,8 +1,6 @@
-![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/crysok/tci_tpt?include_prereleases&style=flat-square)
-
 # Trabajo práctico transversal
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e2ba4a6d2eee4a20ada46eb7e8c1af6b)](https://app.codacy.com/gh/CrysoK/TC1-TPT?utm_source=github.com&utm_medium=referral&utm_content=CrysoK/TC1-TPT&utm_campaign=Badge_Grade_Settings)
+![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/crysok/tci_tpt?include_prereleases&style=flat-square) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e2ba4a6d2eee4a20ada46eb7e8c1af6b)](https://app.codacy.com/gh/CrysoK/TC1-TPT?utm_source=github.com&utm_medium=referral&utm_content=CrysoK/TC1-TPT&utm_campaign=Badge_Grade_Settings)
 
 ## Descripción
 
