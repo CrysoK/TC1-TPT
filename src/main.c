@@ -283,14 +283,8 @@ bool isStringAccepted(struct LSSNode *af, char *string) {
 
   if(DEBUG) { printf("E. Inicial = ");printLss(statesSet);printf("\n"); }
 
-  auxNode = getTransition(deltaSet, statesSet, stringSymbols[0]);
-  freeLss(&statesSet);
-  statesSet = auxNode;
-
-  if(DEBUG) { printf("0) Resultado = "); printLss(statesSet); printf("\n"); }
-
   // Por cada simbolo de la cadena
-  for(int i = 1; i < numOfSymbols; i++) {
+  for(int i = 0; i < numOfSymbols; i++) {
     auxNode = getTransition(deltaSet, statesSet, stringSymbols[i]);
     freeLss(&statesSet);
     statesSet = auxNode;
