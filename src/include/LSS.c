@@ -35,13 +35,15 @@ enum ERR {
 // Mensajes de error
 void            errorMessages(enum ERR code, const char *func, char *file, int line);
 //
-struct LSSNode *newLSFromStringRecursive(char * listOrSetAsString);
+struct LSSNode *newLsFromStringRecursive(char * listOrSetAsString);
+//
+char           *stringFromLss(char *string, struct LSSNode * nodo, bool primero);
 // 
 struct LSSNode *newLSNode(enum NODE_TYPE typeToCreate);
 //
-struct LSSNode *cloneLSSNode(struct LSSNode *listOrSetorString);
+void            printLsRecursive(struct LSSNode *listOrSet, bool isFirstElement, int *count);
 //
-void            printLSRecursive(struct LSSNode *listOrSet, bool isFirstElement);
+void genDotNodes(FILE *file, struct LSSNode *actual, int *id, struct LSSNode *previo, int idPrev, int dataOrNext);
 //
 void            linkNodeAsData(struct LSSNode *node, struct LSSNode *newDataNode);
 //
@@ -58,8 +60,6 @@ bool            isStringANumber(char * string);
 int             getSizeOfLS(struct LSSNode *listOrSet);
 //
 int             compareStrings(char *string1, char *string2);
-//
-int             compareNodes(struct LSSNode *node1, struct LSSNode *node2);
 
 // !#S
 
@@ -83,10 +83,8 @@ int             getDataPriority(struct LSSNode * dataNode);
 struct LSSNode *newStringNode(char * string);
 // Extrae la cadena encerrada en llaves o corchetes
 char          **splitString(char * string, int * sizeOfReturnedArray);
-// Quita espacios alrededor de un elemento
-void            deleteStringSpaces(char * string);
 // Verifica que la entrada sea un conjunto o una lista
-bool            isStringAListOrSet(char * string, bool isStringAnError);
+bool            isStringAListOrSet(char * string);
 
 // !#S:!#S:!#S
 
@@ -97,34 +95,106 @@ bool            isStringAListOrSet(char * string, bool isStringAnError);
 // #S GENERAL //////////////////////////////////////////////////////////////////
 
 // 
-struct LSSNode *newLSFromString(char *input) {
-  // Validacion de la cadena de entrada
-  if(!isStringAListOrSet(input, true)) return NULL;
-  // Retorna la creación recursiva
-  return newLSFromStringRecursive(input);;
+struct LSSNode *newLssFromString(char *input) {
+  // Tipo a crear
+  if(isStringAListOrSet(input)) {
+    // Retorna la creación recursiva
+    return newLsFromStringRecursive(input);;
+  } else return newStringNode(input);
 }
 
-void printLS(struct LSSNode * node) {
+void printLss(struct LSSNode * node) {
   // Comprobación de que exista al menos un nodo
   if(node == NULL) {
     printf("No hay datos");
     return;
   }
-  printLSRecursive(node, true);
+  int count = 0;
+  printLsRecursive(node, true, &count);
 }
 
-void freeLSS(struct LSSNode ** sl) {
+void genDotNodes(FILE *file, struct LSSNode *actual, int *id, struct LSSNode *prev, int idPrev, int dataOrNext) {
+  int aux = *id;
+  // Caso del conjunto vacío o lista vacía
+  if(actual == NULL) {
+    fprintf(file, "\tnodo%d[label=\"NULL\" shape=none]\n", *id);
+    if(prev != NULL) {
+      if(dataOrNext == 0) {
+        fprintf(file, "\tnodo%d:data->nodo%d\n", idPrev, *id);
+      } else fprintf(file, "\tnodo%d:next->nodo%d\n", idPrev, *id);
+    }
+    *id = *id + 1;
+    return;
+  }
+  enum NODE_TYPE type = actual->type;
+  if(type == STR) {
+    // Se muestra la cadena
+    if(actual->str[0] == '{') {
+      char *temp = sdsnewlen(actual->str + 1, strlen(actual->str) - 2);
+      fprintf(file, "\tnodo%d[label=\"<type>STR|<str>\\\"\\{%s\\}\\\"\"]\n", *id, temp);
+      sdsfree(temp);
+    } else fprintf(file, "\tnodo%d[label=\"<type>STR|<str>\\\"%s\\\"\"]\n", *id, actual->str);
+    if(prev != NULL) {
+      if(dataOrNext == 0) {
+        fprintf(file, "\tnodo%d:data->nodo%d:type\n", idPrev, *id);
+      } else fprintf(file, "\tnodo%d:next->nodo%d:type\n", idPrev, *id);
+    }
+    *id = *id + 1;
+    return;
+  } else if(type == SET) {
+    fprintf(file, "\tnodo%d[label=\"<type>SET|<data>data|<next>next\" color=blue]\n", *id);
+    if(prev != NULL) {
+      if(dataOrNext == 0) {
+        fprintf(file, "\tnodo%d:data->nodo%d:type\n", idPrev, *id);
+      } else fprintf(file, "\tnodo%d:next->nodo%d:type\n", idPrev, *id);
+    }
+    *id = *id + 1;
+  } else {
+    fprintf(file, "\tnodo%d[label=\"<type>LST|<data>data|<next>next\" color=green]\n", *id);
+    if(prev != NULL) {
+      if(dataOrNext == 0) {
+        fprintf(file, "\tnodo%d:data->nodo%d:type\n", idPrev, *id);
+      } else fprintf(file, "\tnodo%d:next->nodo%d:type\n", idPrev, *id);
+    }
+    *id = *id + 1;
+  }
+  // Se muestra el dato
+  genDotNodes(file, actual->data, id, actual, aux, 0);
+  genDotNodes(file, actual->next, id, actual, aux, 1);
+}
+
+void generateDotFile(struct LSSNode *lss) {
+
+  // open file in write mode
+  FILE *file = fopen("E:\\Google_Drive\\Academico\\UNSa\\Year_2\\Teoria_de_la_computacion_1\\Trabajo_practico_transversal\\tpt_parte_2\\dot\\LSS.dot", "w");
+  if(file == NULL) {
+    printf("<x> No se pudo abrir el archivo\n");
+    return;
+  }
+
+  fprintf(file, "digraph AF {\n\tgraph [center=true splines=true]\n\tnode[shape=record]\n");
+
+  int id = 0;
+  genDotNodes(file, lss, &id, NULL, 0, 0);
+
+  fprintf(file, "}");
+
+  fclose(file);
+}
+
+void freeLss(struct LSSNode ** sl) {
+  struct LSSNode *aux = *sl;
   // Exit si el nodo no existe
-  if(*sl == NULL) return;
-  if((*sl)->type != STR) {
+  if(aux == NULL) return;
+  if(aux->type != STR) {
     // Se libera el subconjunto o sublista
-    freeLSS(&((*sl)->data));
+    freeLss(&(aux->data));
     // Se libera el siguiente elemento
-    freeLSS(&((*sl)->next));
+    freeLss(&(aux->next));
   } else {
     // Se libera la cadena
-    sdsfree((*sl)->str);
-    (*sl)->str = NULL;
+    sdsfree(aux->str);
+    aux->str = NULL;
   }
   // Finalmente se libera el nodo actual
   free(*sl);
@@ -143,22 +213,41 @@ struct LSSNode *getElementByPos(struct LSSNode **ls, int pos) {
     currentPos++;
   }
   // Si existe el elemento, retornarlo
-  if(currentElement) return currentElement;
+  if(currentElement) return currentElement->data;
   else return NULL;
 }
 
-struct LSSNode *getDataByPos(struct LSSNode **ls, int pos) {
-  return getElementByPos(ls, pos)->data;
+int getPosByElement(struct LSSNode *ls, struct LSSNode *element) {
+  if(!ls) return -1;
+  if(ls->type == STR) return -1;
+  if(DEBUG) { printf("Buscando \"");printLss(element);printf("\"\n"); }
+  int pos = 1;
+  while(ls != NULL) {
+    int comp = compareLss(ls->data, element);
+
+    // En el caso de conjuntos, si el elemento es menor, no es necesario seguir buscando
+    // (Todavía no se puede asegurar que un conjunto esté siempre ordenado)
+    // if(ls->type == SET && comp > 0) return 0;
+
+    // Elemento encontrado
+    if(comp == 0) return pos;
+
+    // Siguiente
+    ls = ls->next;
+    pos++;
+  }
+  // No hay más para comparar, elemento no encontrado
+  return 0;
 }
 
-char *getStringFromNode(struct LSSNode *ls) {
+char *getElementString(struct LSSNode *ls) {
   if(!ls) return NULL;
   else if(ls->type == STR) return ls->str;
-  else if(ls->data != NULL) return getStringFromNode(ls->data);
+  else if(ls->data != NULL) return getElementString(ls->data);
   else return NULL;
 }
 
-enum NODE_TYPE  getNodeType(struct LSSNode *lss) {
+enum NODE_TYPE  getElementType(struct LSSNode *lss) {
   if(lss == NULL) return -1;
   else return lss->type;
 }
@@ -166,76 +255,61 @@ enum NODE_TYPE  getNodeType(struct LSSNode *lss) {
 // node1 > node2 return 1
 // node1 < node2 return -1
 // node1 = node2 return 0
-int compareNodes(struct LSSNode *node1, struct LSSNode *node2) {
+int compareLss(struct LSSNode *node1, struct LSSNode *node2) {
   int returnValue = 0;
-  int type1 = getDataPriority((*node1).data);
-  int type2 = getDataPriority((*node2).data);
+  int type1 = getDataPriority(node1);
+  int type2 = getDataPriority(node2);
   // Comparación de prioridades
   if(type1 > type2) returnValue = 1;
   else if(type1 < type2) returnValue = -1;
+  // Ambos son NULL
+  else if(type1 == 0) returnValue = 0;
   // Comparación de cadenas
   else if(type1 == 1) {
-    if(compareStrings(node1->data->str, node2->data->str) > 0) returnValue = 1;
-    else if(compareStrings(node1->data->str, node2->data->str) < 0) returnValue = -1;
+    if(compareStrings(node1->str, node2->str) > 0) returnValue = 1;
+    else if(compareStrings(node1->str, node2->str) < 0) returnValue = -1;
     else returnValue = 0;
     // Comparación de conjuntos y listas
   } else {
-    int size1 = getSizeOfLS(node1->data);
-    int size2 = getSizeOfLS(node2->data);
+    int size1 = getSizeOfLS(node1);
+    int size2 = getSizeOfLS(node2);
     if(size1 > size2) returnValue = 1;
     else if(size1 < size2) returnValue = -1;
     else {
-      int resComp = compareLSS(node1->data, node2->data);
+      int resComp = compareLss(node1->data, node2->data);
       if(resComp > 0) returnValue = 1;
       else if(resComp < 0) returnValue = -1;
-      else returnValue = 0;
+      else returnValue = compareLss(node1->next, node2->next);
     }
   }
-  if(DEBUG) printf("<?> El resultado de \"%s\" es %d\n", __func__, returnValue);
+  //if(DEBUG) printf("<?> El resultado de \"%s\" es %d\n", __func__, returnValue);
   return returnValue;
 }
 
-int compareLSS(struct LSSNode *node1, struct LSSNode *node2) {
-  int returnValue = compareNodes(node1, node2);
-  if(returnValue == 0 && node1->next != NULL && node2->next != NULL)
-    returnValue = compareLSS(node1->next, node2->next);
-  if(DEBUG) printf("<?> El resultado de \"%s\" es %d\n", __func__, returnValue);
-  return returnValue;
-}
+struct LSSNode *cloneLss(struct LSSNode *lss, enum NODE_TYPE type) {
+  if(lss == NULL) return NULL;
 
-/*// LSS1 > LSS2 return 1
-// LSS1 < LSS2 return -1
-// LSS1 = LSS2 return 0
-int compareLSS(struct LSSNode *node1, struct LSSNode *node2) {
-  int returnValue = 0;
-  int type1 = getDataPriority((*node1).data);
-  int type2 = getDataPriority((*node2).data);
-  // Comparación de prioridades
-  if(type1 > type2) returnValue = 1;
-  else if(type1 < type2) returnValue = -1;
-  // Comparación de cadenas
-  else if(type1 == 1) {
-    if(compareStrings(node1->data->str, node2->data->str) > 0) returnValue = 1;
-    else if(compareStrings(node1->data->str, node2->data->str) < 0) returnValue = -1;
-    else if(node1->next != NULL && node2->next != NULL) return compareLSS(node1->next, node2->next);
-    else if(node1->next != NULL && node2->next == NULL) returnValue = 1;
-    else if(node1->next == NULL && node2->next != NULL) returnValue = -1;
-    // Comparación de conjuntos y listas
+  if(lss->type == STR && type != STR) {
+    printf("<x> No se puede convertir de forma directa un nodo STR en uno LST o SET. Usa \"newLssFromString\".\n");
+    return NULL;
+  }
+
+  struct LSSNode *newNode;
+  newNode = newLSNode(type);
+  if(newNode == NULL) {
+    errorMessages(MALLOC, __func__, __FILE__, __LINE__);
+    return NULL;
+  }
+  if(type != STR) {
+    if(lss->data != NULL) {
+      newNode->data = cloneLss(lss->data, lss->data->type);
+    } else newNode->data = NULL;
+    newNode->next = cloneLss(lss->next, type);
   } else {
-    int size1 = getSizeOfLS(node1->data);
-    int size2 = getSizeOfLS(node2->data);
-    if(size1 > size2) returnValue = 1;
-    else if(size1 < size2) returnValue = -1;
-    else {
-      int resComp = compareLSS(node1->data, node2->data);
-      if(resComp > 0) returnValue = 1;
-      else if(resComp < 0) returnValue = -1;
-      else if(node1->next != NULL) returnValue = compareLSS(node1->next, node2->next);
-    }
+    newNode->str = stringFromLss(sdsempty(), lss, true);
   }
-  if(DEBUG) printf("<?> El resultado de \"%s\" es %d\n", __func__, returnValue);
-  return returnValue;
-}*/
+  return newNode;
+}
 
 // !#S
 
@@ -255,71 +329,64 @@ struct LSSNode *newIntersectionSet(struct LSSNode *setA, struct LSSNode *setB) {
   if(setA == NULL || setB == NULL) return NULL;
   struct LSSNode *intersection = newLSNode(SET);
   if(intersection == NULL) return NULL;
-  int sizeA = getSizeOfLS(setA);
-  int sizeB = getSizeOfLS(setB);
-  int i = 1;
-  int j = 1;
 
-  while(i <= sizeA && j <= sizeB) {
+  while(setA != NULL && setB != NULL) {
+    int comp = compareLss(setA->data, setB->data);
     // A[i] = B[j]
-    if(compareLSS(getElementByPos(&setA, i), getElementByPos(&setB, j)) == 0) {
-      if(hasDataLS(intersection)) {
+    if(comp == 0) {
+      if(hasDataLs(intersection)) {
         struct LSSNode *setNode = newLSNode(SET);
         if(setNode == NULL) {
           errorMessages(MALLOC, __func__, __FILE__, __LINE__);
-          return false;
+          return NULL;
         }
-        linkNodeAsData(setNode, cloneLSSNode(getDataByPos(&setA, i)));
-        addNodeInOrder(&intersection, setNode);
-      } else linkNodeAsData(intersection, cloneLSSNode(getDataByPos(&setA, i)));
-      i++;
-      j++;
+        setNode->data = cloneLss(setA->data, setA->data->type);
+        int res = addNodeInOrder(&intersection, setNode);
+        if(res <= 0) {
+          freeLss(&setNode);
+          return NULL;
+        }
+      } else intersection->data = cloneLss(setA->data, setA->data->type);
+      setA = setA->next;
+      setB = setB->next;
       // A[i] < B[j]
-    } else if(compareLSS(getElementByPos(&setA, i), getElementByPos(&setB, j)) < 0) {
-      i++;
+    } else if(comp < 0) {
+      setA = setA->next;
       // A[i] > B[j]
-    } else if(compareLSS(getElementByPos(&setA, i), getElementByPos(&setB, j)) > 0) {
-      j++;
+    } else if(comp > 0) {
+      setB = setB->next;
     }
   }
   return intersection;
 }
 
-bool addStringToSet(struct LSSNode **setRoot, char *string) {
+int addElementToSet(struct LSSNode **setRoot, struct LSSNode *node) {
   if((*setRoot) == NULL) {
     printf("<x> El primer argumento de \"%s\" es NULL <%s:%d>\n", __func__, __FILE__, __LINE__);
-    return false;
+    return -1;
   }
   if((*setRoot)->type != SET) {
     printf("<x> El primer argumento de \"%s\" no es un conjunto <%s:%d>\n", __func__, __FILE__, __LINE__);
-    return false;
+    return -1;
   }
-  if(string == NULL) {
+  if(node == NULL) {
     printf("<x> El segundo argumento de \"%s\" es NULL <%s:%d>\n", __func__, __FILE__, __LINE__);
-    return false;
+    return -1;
   }
-  struct LSSNode * data;
-  if(isStringAListOrSet(string, false)) {
-    if(DEBUG) printf("<?> Insertando un conjunto o lista al conjunto\n");
-    data = newLSFromString(string);
-  } else {
-    if(DEBUG) printf("<?> Insertando una cadena al conjunto\n");
-    data = newStringNode(string);
-  }
-  if(data == NULL) {
-    errorMessages(MALLOC, __func__, __FILE__, __LINE__);
-    return false;
-  }
-  if(hasDataLS(*setRoot)) {
+  if(hasDataLs(*setRoot)) {
     struct LSSNode *setNode = newLSNode(SET);
     if(setNode == NULL) {
       errorMessages(MALLOC, __func__, __FILE__, __LINE__);
-      return false;
+      return -1;
     }
-    linkNodeAsData(setNode, data);
-    addNodeInOrder(setRoot, setNode);
-  } else linkNodeAsData(*setRoot, data);
-  return true;
+    setNode->data = node;
+    int res = addNodeInOrder(setRoot, setNode);
+    if(res <= 0) free(setNode);
+    return res;
+  } else {
+    (*setRoot)->data = node;
+    return 1;
+  }
 }
 
 // !#S
@@ -331,32 +398,28 @@ struct LSSNode *newEmptyList(void) {
   return new;
 }
 
-bool appendStringToList(struct LSSNode ** list, char * string) {
+bool appendElementToList(struct LSSNode **list, struct LSSNode *node) {
+  if((*list) == NULL) {
+    printf("<x> El primer argumento de \"%s\" es NULL <%s:%d>\n", __func__, __FILE__, __LINE__);
+    return false;
+  }
   if((*list)->type != LST) {
     printf("<x> El primer argumento de \"%s\" no es una lista <%s:%d>\n", __func__, __FILE__, __LINE__);
     return false;
   }
-  struct LSSNode * data;
-  if(isStringAListOrSet(string, false)) {
-    if(DEBUG) printf("<?> Insertando un conjunto o lista a la lista\n");
-    data = newLSFromString(string);
-  } else {
-    if(DEBUG) printf("<?> Insertando una cadena a la lista\n");
-    data = newStringNode(string);
-  }
-  if(data == NULL) {
-    errorMessages(MALLOC, __func__, __FILE__, __LINE__);
+  if(node == NULL) {
+    printf("<x> El segundo argumento de \"%s\" es NULL <%s:%d>\n", __func__, __FILE__, __LINE__);
     return false;
   }
-  if(hasDataLS(*list)) {
+  if(hasDataLs(*list)) {
     struct LSSNode *lstNode = newLSNode(LST);
     if(lstNode == NULL) {
       errorMessages(MALLOC, __func__, __FILE__, __LINE__);
       return false;
     }
-    linkNodeAsData(lstNode, data);
+    linkNodeAsData(lstNode, node);
     linkNodeAsNext(getLastNode(*list), lstNode);
-  } else linkNodeAsData(*list, data);
+  } else linkNodeAsData(*list, node);
   return true;
 }
 
@@ -393,13 +456,14 @@ void errorMessages(enum ERR key, const char *func, char * file, int line) {
   }
 }
 
-struct LSSNode *newLSFromStringRecursive(char *string) {
+struct LSSNode *newLsFromStringRecursive(char *string) {
   // Crear raiz
   struct LSSNode *rootNode = NULL;
   // De qué tipo es string
   enum NODE_TYPE stringType = getStringType(string);
 
-  char **elementsArray; int elementsCount = 0;
+  char **elementsArray;
+  int elementsCount = 0;
   // Crear un array con los elementos de string
   elementsArray = splitString(string, &elementsCount);
 
@@ -408,9 +472,10 @@ struct LSSNode *newLSFromStringRecursive(char *string) {
       struct LSSNode *newNode = newLSNode(stringType); // Nodo para el nuevo elemento, todos del mismo tipo
       if(getStringType(elementsArray[index]) != STR) { // El elemento es un subconjunto/sublista
         // Crear el subset/sublst y unirlo como elemento del actual (como dato)
-        linkNodeAsData(newNode, newLSFromStringRecursive(elementsArray[index]));
+        linkNodeAsData(newNode, newLsFromStringRecursive(elementsArray[index]));
       } else { // El elemento es STR
         // Si la cadena no es vacía, crear el nodo STR y unirlo como elemento (como dato)
+        elementsArray[index] = sdstrim(elementsArray[index], " ");
         if(sdscmp(elementsArray[index], "") != 0) linkNodeAsData(newNode, newStringNode(elementsArray[index]));
       }
       if(rootNode == NULL) rootNode = newNode; // Si raiz aún no apunta a un nodo, inicializar
@@ -419,14 +484,52 @@ struct LSSNode *newLSFromStringRecursive(char *string) {
         linkNodeAsNext(getLastNode(rootNode), newNode);
       } else {
         // Insertar el nuevo nodo de forma ordenada solo cuando es elemento de un conjunto
-        addNodeInOrder(&rootNode, newNode);
+        int res = addNodeInOrder(&rootNode, newNode);
+        if(res <= 0) {
+          freeLss(&newNode);
+        }
       }
     } // <- Fin del ciclo
-  } else { // No hay elementos
-    // ERROR: Cantidad de elementos = 0 ???
   }
   sdsfreesplitres(elementsArray, elementsCount); // Libera la memoria utilizada por el array
   return rootNode;
+}
+
+/* sdsValida sdscatprintf(sdsNoValida, ...);
+
+sdsValida stringFromLss(sdsNoValida, nodo, primero){
+  return sdsValida
+}
+
+
+*/
+
+char *stringFromLss(char *string, struct LSSNode * nodo, bool primero) {
+  // Caso del conjunto vacío o lista vacía
+  if(nodo == NULL) {
+
+    return sdscat(string, " ");
+  }
+  if(nodo->type == STR) {
+    // Se muestra la cadena 
+
+    return sdscat(string, nodo->str);;
+  }
+  // Se abre el conjunto o lista
+  if(primero) {
+    if(nodo->type == SET) string = sdscat(string, "{");
+    else string = sdscat(string, "[");
+  }
+  // Se muestra el dato
+  string = stringFromLss(string, nodo->data, true);
+  if(nodo->next == NULL) {
+    // Se cierra el conjunto o lista
+    if(nodo->type == SET) return sdscat(string, "}");
+    else return sdscat(string, "]");
+  }
+  // Se muestra el siguiente elemento
+  string = sdscat(string, ",");
+  return stringFromLss(string, nodo->next, false);
 }
 
 struct LSSNode *newLSNode(enum NODE_TYPE type) {
@@ -443,19 +546,8 @@ struct LSSNode *newStringNode(char *str) {
   nuevo = malloc(sizeof(*nuevo));
   nuevo->type = STR;
   // Eliminar espacios alrededor del elemento
-  deleteStringSpaces(str);
-  nuevo->str = sdsnew(str);
+  nuevo->str = sdstrim(sdsnew(str), " ");
   return nuevo;
-}
-
-struct LSSNode *cloneLSSNode(struct LSSNode *lss) {
-  struct LSSNode *newNode = malloc(sizeof(*newNode));
-  newNode->type = lss->type;
-  if(newNode->type != STR) {
-    newNode->data = cloneLSSNode(lss->data);
-    newNode->next = cloneLSSNode(lss->next);
-  } else newNode->str = sdsnew(lss->str);
-  return newNode;
 }
 
 void linkNodeAsData(struct LSSNode *parent, struct LSSNode *data) {
@@ -472,11 +564,9 @@ struct LSSNode *getLastNode(struct LSSNode* primero) {
   } else return primero;
 }
 
-void deleteStringSpaces(char *str) {
-  sdstrim(str, " ");
-}
+bool isStringAListOrSet(char *str) {
+  if(str == NULL) return false;
 
-bool isStringAListOrSet(char *str, bool isStringAnError) {
   enum NODE_TYPE stringType = getStringType(str);
   size_t len = strlen(str);
   bool isListOrSet = true; // Variable que se retornará
@@ -495,7 +585,8 @@ bool isStringAListOrSet(char *str, bool isStringAnError) {
       countPointer = &setCount;
       break;
     case STR:
-      if(isStringAnError) errorMessages(NOT_LS, __func__, __FILE__, __LINE__);
+      if(DEBUG) printf("<?> La entrada no es un conjunto ({ }) ni una lista "
+      "([ ]) <%s><%s:%d>\n", __func__, __FILE__, __LINE__);
       return false; // Se omite el resto del análisis
       break;
   }
@@ -513,7 +604,7 @@ bool isStringAListOrSet(char *str, bool isStringAnError) {
         isListOrSet = true;
       } else { // Si no es el último, el conjunto "cerró" antes del final y solo es un elemento de str
         isListOrSet = false;// El char de cierre no está al final
-        if(isStringAnError) errorMessages(NOT_LS, __func__, __FILE__, __LINE__);
+        errorMessages(NOT_LS, __func__, __FILE__, __LINE__);
       }
       // Se impide cambiar el valor de isListOrSet nuevamente
       isFirstTime = false;
@@ -532,6 +623,7 @@ bool isStringAListOrSet(char *str, bool isStringAnError) {
 }
 
 enum NODE_TYPE getStringType(char *str) {
+  if(str == NULL) return STR;
   switch(str[0]) {
     case '{':
       if(DEBUG) printf("<?> Tipo SET detectado ('{')\n");
@@ -561,7 +653,7 @@ char **splitString(char *str, int *cant) {
   int req_set = 0; // Suponiendo que str no es un conjunto
   int req_lst = 0; // Suponiendo que str no es una lista
 
-  if(isStringAListOrSet(str, true)) { // Se confirma que str sí es un conjunto o una lista
+  if(isStringAListOrSet(str)) { // Se confirma que str sí es un conjunto o una lista
     ini = 1; // Para ignorar el caracter de apertura
     lar = lar - 1; // Para ignorar el caracter de cierre
     switch(getStringType(str)) {
@@ -632,7 +724,12 @@ char **splitString(char *str, int *cant) {
   *cant = 0;
   return NULL;
 }
-void printLSRecursive(struct LSSNode * nodo, bool primero) {
+void printLsRecursive(struct LSSNode * nodo, bool primero, int *count) {
+  // hardlimit por si el LSS tiene algún error
+  if(*count >= 100) {
+    printf(" <x> Limite alcanzado ");
+    return;
+  }
   // Caso del conjunto vacío o lista vacía
   if(nodo == NULL) {
     printf(" ");
@@ -647,7 +744,8 @@ void printLSRecursive(struct LSSNode * nodo, bool primero) {
   // Se abre el conjunto o lista
   if(primero) (type == SET) ? printf("{") : printf("[");
   // Se muestra el dato
-  printLSRecursive(nodo->data, true);
+  *count = *count + 1;
+  printLsRecursive(nodo->data, true, count);
   if(nodo->next == NULL) {
     // Se cierra el conjunto o lista
     type == SET ? printf("}") : printf("]");
@@ -655,10 +753,13 @@ void printLSRecursive(struct LSSNode * nodo, bool primero) {
   }
   // Se muestra el siguiente elemento
   printf(",");
-  printLSRecursive(nodo->next, false);
+  *count = *count + 1;
+  printLsRecursive(nodo->next, false, count);
 }
 
-bool hasDataLS(struct LSSNode * sl) {
+bool hasDataLs(struct LSSNode * sl) {
+  if(sl == NULL) return false;
+  if(sl->type == STR) return true;
   if(sl->data != NULL) return true;
   else {
     if(DEBUG) printf("<?> Nodo LST/SET sin dato detectado\n");
@@ -690,10 +791,10 @@ bool isStringANumber(char * string) {
 int getSizeOfLS(struct LSSNode *node) {
   // Control nodo válido
   if(node == NULL) return -1;
-  
+
   if(node->type == STR) return -1;
   // Control conjunto vacío
-  if(!hasDataLS(node)) return 0;
+  if(!hasDataLs(node)) return 0;
 
   int cnt = 0;
   while(node != NULL) {
@@ -725,7 +826,7 @@ int compareStrings(char *string1, char *string2) {
   if(isStringANumber(string1) && isStringANumber(string2)) {
     double num1 = atof(string1);
     double num2 = atof(string2);
-    if(num1 < 0 || num2 < 0){
+    if(num1 < 0 || num2 < 0) {
       if(num1 > num2) return 1;
       else if(num1 < num2) return -1;
       else return 0;
@@ -770,24 +871,30 @@ int getDataPriority(struct LSSNode * data) {
 int addNodeInOrder(struct LSSNode **firstNode, struct LSSNode *newNode) {
   if(*firstNode == NULL) {
     printf("<x> El primer argumento de \"%s\" debe ser un conjunto <%s:%d>\n", __func__, __FILE__, __LINE__);
-    return 0;
+    return -1;
+  }
+  if((*firstNode)->type != SET) {
+    printf("<x> El primer argumento de \"%s\" debe ser un conjunto <%s:%d>\n", __func__, __FILE__, __LINE__);
+    return -1;
   }
   struct LSSNode *currentNode = *firstNode;
   struct LSSNode *previousNode = *firstNode;
   int currentPos = 1;
-  int cmpNodes = compareLSS(newNode, currentNode);
+  int cmpNodes = compareLss(newNode->data, currentNode->data);
   // Búsqueda de la posición
   while(cmpNodes > 0 && currentNode->next != NULL) {
     if(DEBUG) printf("<?> \"%s\" es mayor que \"%s\"\n", newNode->data->str, currentNode->data->str);
     previousNode = currentNode;
     currentNode = currentNode->next;
     currentPos++;
-    cmpNodes = compareLSS(newNode, currentNode);
+    cmpNodes = compareLss(newNode->data, currentNode->data);
   }
   if(cmpNodes == 0) {
-    printf("<i> Eliminando elemento repetido \"");
-    printLS(newNode->data); printf("\"\n");
-    freeLSS(&newNode);
+    if(DEBUG) {
+      printf("<?> Elemento repetido \"");
+      printLss(newNode->data);
+      printf("\"\n");
+    }
     return 0;
   }
   // Caso especial para la primera posicion (raiz)
@@ -810,7 +917,7 @@ int addNodeInOrder(struct LSSNode **firstNode, struct LSSNode *newNode) {
   }
   if(DEBUG) {
     printf("<?> Elemento \"");
-    printLS(newNode->data);
+    printLss(newNode->data);
     printf("\" insertado en la posicion %d\n", currentPos);
   }
   return currentPos;
@@ -825,6 +932,7 @@ int addNodeInOrder(struct LSSNode **firstNode, struct LSSNode *newNode) {
 // !#S
 
 // #S CADENAS //////////////////////////////////////////////////////////////////
+
 
 
 // !#S:!#S

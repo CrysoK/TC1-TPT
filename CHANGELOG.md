@@ -6,6 +6,60 @@
 - Validación de un **AF** mientras el usuario lo va ingresando.
 - Visualización de la estructura de datos utilizada.
 
+## [0.8.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.7.0) - 2021-07-00
+
+### General
+
+### Módulos
+
+#### Terminados
+
+- `appendElementToList` (nuevo)
+- `addElementToSet` (nuevo)
+- `generateDotFile` (nuevo)
+- `stringFromLss` (nuevo)
+- `genDotNodes` (nuevo)
+- `afndToAfd` (nuevo)
+
+#### Modificados
+
+- `addNodeInOrder`
+- `cloneLss` (antes `cloneLSSNode`)
+- `compareLss` (antes `compareLSS`)
+- `freeLss` (antes `freeLSS`)
+- `getAfType`
+- `getElementString` (antes `getStringFromNode`)
+- `getElementType` (antes `getNodeType`)
+- `getTransition`
+- `hasDataLs`
+- `hasDataLs` (antes `hasDataLS`)
+- `isStringAccepted`
+- `isStringAListOrSet`
+- `main`
+- `mainMenu`
+- `newAf`
+- `newIntersectionSet`
+- `newLsFromStringRecursive`
+- `newLssFromString` (antes `newLSFromString`)
+- `printAf`
+- `printLsRecursive`
+- `printLss` (antes `printLS`)
+
+#### Incompletos
+
+- `newPowerSet`
+- `newUnionSet`
+
+#### Eliminados
+
+- `addStringToSet`
+- `appendStringToList`
+- `areSetsEqual`
+- `deleteStringSpaces`
+- `getDataByPos`
+- `isElementOfList`
+- `isElementOfSet`
+
 ## [0.7.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.7.0) - 2021-07-25
 
 ### General
@@ -21,53 +75,53 @@
 
 #### Terminados
 
-- `compareStrings` (nuevo)
+- `acceptanceMenu` (nuevo)
+- `addStringToSet` (nuevo)
 - `cloneLSSNode` (nuevo)
+- `compareNodes` (nuevo)
 - `compareStrings` (nuevo)
+- `compareStrings` (nuevo)
+- `getAfType` (nuevo)
 - `getDataByPos` (nuevo)
 - `getNodeType` (nuevo)
-- `compareNodes` (nuevo)
-- `addStringToSet` (nuevo)
-- `hasDataLS` (nuevo)
+- `getStringFromNode`
 - `getTransition` (nuevo)
+- `hasDataLS` (nuevo)
 - `isStringAccepted` (nuevo)
-- `splitStringBySymbols` (nuevo)
-- `getAfType` (nuevo)
 - `mainMenu` (nuevo)
 - `newAf` (nuevo)
-- `printAf` (nuevo)
-- `acceptanceMenu` (nuevo)
-- `getStringFromNode`
 - `newEmptySet`
 - `newIntersectionSet`
+- `printAf` (nuevo)
+- `splitStringBySymbols` (nuevo)
 
 #### Modificados
 
-- `main`
-- `getDataPriority`
-- `compareNodes`
-- `freeLSS`
-- `errorMessages`
-- `getElementByPos`
-- `compareLSS`
 - `appendStringToList`
-- `isStringAListOrSet`
-- `getSetCardinal`
+- `compareLSS`
+- `compareNodes`
+- `errorMessages`
+- `freeLSS`
+- `getDataPriority`
+- `getElementByPos`
 - `getListSize`
+- `getSetCardinal`
+- `isStringAListOrSet`
+- `main`
 
 #### Incompletos
 
-- `isStringElementOfLS`
+- `areSetsEqual`
 - `isElementOfList`
 - `isElementOfSet`
-- `areSetsEqual`
+- `isStringElementOfLS`
 - `newPowerSet`
 - `newUnionSet`
 
 #### Eliminados
 
-- `isEmptyLS`
 - `isAfnd`
+- `isEmptyLS`
 
 ## [0.6.1](https://github.com/CrysoK/TCI_TPT/releases/tag/0.6.1) - 2021-07-13
 
@@ -89,38 +143,38 @@
 
 #### Terminados
 
+- `addNodeInOrder`
 - `getElementByPos` (nuevo)
 - `getListSize` (nuevo)
 - `getSizeOfLS` (nuevo)
-- `addNodeInOrder`
 
 #### Modificados
 
+- `getDataPriority`
+- `getSetCardinal`
+- `getStringType`
+- `isStringAListOrSet`
+- `isStringANumber`
 - `main`
+- `newEmptyList`
 - `newLSFromString`
 - `newLSFromStringRecursive`
-- `printLS`
 - `newStringNode`
-- `getSetCardinal`
-- `newEmptyList`
-- `isStringAListOrSet`
-- `getStringType`
+- `printLS`
 - `splitString`
-- `isStringANumber`
-- `getDataPriority`
 
 #### Incompletos
 
-- `isAfnd` (nuevo)
-- `isStringElementOfLS`
+- `areSetsEqual`
 - `getStringFromNode`
+- `isAfnd` (nuevo)
 - `isElementOfList`
 - `isElementOfSet`
-- `areSetsEqual`
-- `newPowerSet`
-- `newIntersectionSet`
-- `newUnionSet`
+- `isStringElementOfLS`
 - `newEmptySet`
+- `newIntersectionSet`
+- `newPowerSet`
+- `newUnionSet`
 
 #### Eliminados
 
