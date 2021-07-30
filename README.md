@@ -1,6 +1,6 @@
-# Trabajo práctico transversal
-
 ![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/crysok/tci_tpt?include_prereleases&style=flat-square)
+
+# Trabajo práctico transversal
 
 ## Descripción
 
