@@ -2,13 +2,14 @@
 
 ## Unreleased
 
-- Convertir **AFND** en **AFD**.
 - Validación de un **AF** mientras el usuario lo va ingresando.
-- Visualización de la estructura de datos utilizada.
 
 ## [0.8.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.7.0) - 2021-07-00
 
 ### General
+
+- Convertir **AFND** en **AFD**.
+- Visualización de la estructura de datos utilizada.
 
 ### Módulos
 
