@@ -5,12 +5,12 @@
 - Visualización mejorada.
 - Validación de un **AF** mientras el usuario lo va ingresando.
 
-## [0.8.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.8.0) - 2021-07-29
+## [0.8.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.8.0) - 2021-07-30
 
 ### General
 
 - Conversión de **AFND** en **AFD**.
-- Generación de un archivo (`dot/LSS.dot`) que puede ser interpretado por [Graphviz](https://graphviz.org/) para visualizar el **AF** cargado.
+- Generación del archivo `LSS.dot` que puede ser interpretado por [Graphviz](https://graphviz.org/) para visualizar el **AF** cargado.
 
 ### Módulos
 
