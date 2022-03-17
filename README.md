@@ -2,9 +2,11 @@
 
 ![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/crysok/tci_tpt?include_prereleases&style=flat-square) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e2ba4a6d2eee4a20ada46eb7e8c1af6b)](https://app.codacy.com/gh/CrysoK/TC1-TPT?utm_source=github.com&utm_medium=referral&utm_content=CrysoK/TC1-TPT&utm_campaign=Badge_Grade_Settings)
 
+> :warning: **Si actualmente estás cursando TCI, no deberías estar aquí. Primero debes resolverlo por tu cuenta.**
+
 ## Descripción
 
-> ¿Mucho texto? Avanza hasta [instalación](#instalaci%C3%B3n) o [cómo usar](#c%C3%B3mo-usar).
+> Si quieres pasar a la acción, avanza a [instalación](#instalaci%C3%B3n) o [cómo usar](#c%C3%B3mo-usar).
 
 El trabajo está compuesto por dos partes.
 
@@ -96,15 +98,8 @@ Implementar el [TAD](#tad) descripto utilizando la estructura de datos propuesta
 
 ## Instalación
 
-### Windows
-
-Puede descargar el ejecutable de la última versión [aquí](https://github.com/CrysoK/TCI_TPT/releases).
-
-También puede compilar el programa por su cuenta. Lo más simple es usar `MakeWindows.cmd`. [Más información](https://github.com/CrysoK/C-Makefile).
-
-### Linux
-
-Debe compilar el programa por su cuenta. Lo más simple es usar `MakeLinux.sh`. [Más información](https://github.com/CrysoK/C-Makefile).
+Puedes descargar el código fuente (como archivo comprimido) o un ejecutable (solo para Windows) [aquí](https://github.com/CrysoK/TCI_TPT/releases).
+Se incluye `MakeWindows.cmd` y `MakeLinux.sh` para facilitar la compilación ([más información](https://github.com/CrysoK/WLCM)). Otros sistemas operativos no deberian tener problemas si cuentan con `make`.
 
 ## ¿Cómo usar?
 
