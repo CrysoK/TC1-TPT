@@ -14,7 +14,7 @@
 
 // #S VARIABLES-CONSTANTES /////////////////////////////////////////////////////
 
-// Codigos de error
+// Códigos de error
 enum ERR {
   // Error en asignación de memoria
   MALLOC,
@@ -457,7 +457,7 @@ void errorMessages(enum ERR key, const char *func, char * file, int line) {
 }
 
 struct LSSNode *newLsFromStringRecursive(char *string) {
-  // Crear raiz
+  // Crear raíz
   struct LSSNode *rootNode = NULL;
   // De qué tipo es string
   enum NODE_TYPE stringType = getStringType(string);
@@ -478,9 +478,9 @@ struct LSSNode *newLsFromStringRecursive(char *string) {
         elementsArray[index] = sdstrim(elementsArray[index], " ");
         if(sdscmp(elementsArray[index], "") != 0) linkNodeAsData(newNode, newStringNode(elementsArray[index]));
       }
-      if(rootNode == NULL) rootNode = newNode; // Si raiz aún no apunta a un nodo, inicializar
+      if(rootNode == NULL) rootNode = newNode; // Si raíz aún no apunta a un nodo, inicializar
       else if(stringType != SET) {
-        // Enlazar newNode como el ultimo elemento del arbol
+        // Enlazar newNode como el ultimo elemento del árbol
         linkNodeAsNext(getLastNode(rootNode), newNode);
       } else {
         // Insertar el nuevo nodo de forma ordenada solo cuando es elemento de un conjunto
@@ -574,7 +574,7 @@ bool isStringAListOrSet(char *str) {
   int *countPointer = NULL;
   int setCount = 0;
   int listCount = 0;
-  // Control primer caracter
+  // Control primer carácter
   switch(stringType) {
     case LST:
       listCount = 1;
@@ -600,7 +600,7 @@ bool isStringAListOrSet(char *str) {
     }
     if(*countPointer == 0 && isFirstTime) {
       if(i == len - 1) {
-        // Si es el último caracter, entonces es un conjunto/lista
+        // Si es el último carácter, entonces es un conjunto/lista
         isListOrSet = true;
       } else { // Si no es el último, el conjunto "cerró" antes del final y solo es un elemento de str
         isListOrSet = false;// El char de cierre no está al final
@@ -644,7 +644,7 @@ char **splitString(char *str, int *cant) {
   int elem = 0; // Cantidad de elementos del array
   int mem = 2; // Cantidad de "espacios" que se añaden al asignar memoria
   int ini = 0; // Inicio de cada elemento de str
-  int i = 0; // Posición del caracter de str siendo analizado
+  int i = 0; // Posición del carácter de str siendo analizado
 
   int n_set = 0; // Contador de conjuntos "abiertos"
   int n_lst = 0; // Contador de listas "abiertas"
@@ -654,8 +654,8 @@ char **splitString(char *str, int *cant) {
   int req_lst = 0; // Suponiendo que str no es una lista
 
   if(isStringAListOrSet(str)) { // Se confirma que str sí es un conjunto o una lista
-    ini = 1; // Para ignorar el caracter de apertura
-    lar = lar - 1; // Para ignorar el caracter de cierre
+    ini = 1; // Para ignorar el carácter de apertura
+    lar = lar - 1; // Para ignorar el carácter de cierre
     switch(getStringType(str)) {
       // n_set debe ser 1 y n_lst debe ser 0 para tener en cuenta una coma
       case SET: req_set = 1; req_lst = 0; break;
@@ -897,7 +897,7 @@ int addNodeInOrder(struct LSSNode **firstNode, struct LSSNode *newNode) {
     }
     return 0;
   }
-  // Caso especial para la primera posicion (raiz)
+  // Caso especial para la primera posición (raíz)
   if(currentPos == 1) {
     if(cmpNodes < 0) {
       newNode->next = *firstNode;

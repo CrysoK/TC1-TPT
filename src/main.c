@@ -1,4 +1,4 @@
-// INFORAMCIÓN /////////////////////////////////////////////////////////////////
+// INFORMACIÓN /////////////////////////////////////////////////////////////////
 
 /*\
  * TRABAJO PRÁCTICO TRANSVERSAL - TEORÍA DE LA COMPUTACIÓN I
@@ -174,11 +174,11 @@ char **splitStringBySymbols(char *string, struct LSSNode *symbolsSet, int *array
   int elem = 0;
   // Inicio de la subcadena (símbolo)
   int start = 0;
-  // Caracter de la cadena principal
+  // Carácter de la cadena principal
   int i = 0;
   // Simbolo del conjunto de símbolos del AF
   int j = 1;
-  // Caracter de un simbolo del AF
+  // Carácter de un simbolo del AF
   int k = 0;
 
   array = malloc(sizeof(*array) * memBlock);
@@ -200,15 +200,15 @@ char **splitStringBySymbols(char *string, struct LSSNode *symbolsSet, int *array
     }
     // Se obtiene el simbolo del conjunto
     char *afSymbol = getElementString(getElementByPos(&symbolsSet, j));
-    int symLenght = strlen(afSymbol);
+    int symLength = strlen(afSymbol);
     // Mientras los caracteres sean iguales
     while(afSymbol[k] == string[i] && afSymbol[k] != '\0' && string[i] != '\0') {
-      k++; // Siguiente caracter del simbolo
-      i++; // Siguiente caracter de la cadena
+      k++; // Siguiente carácter del simbolo
+      i++; // Siguiente carácter de la cadena
     }
-    if(k == symLenght) {
+    if(k == symLength) {
       // Extraer simbolo
-      array[elem] = sdsnewlen(string + start, symLenght);
+      array[elem] = sdsnewlen(string + start, symLength);
       elem++;
       start = i;
       j = 1;
@@ -341,7 +341,7 @@ struct LSSNode *getTransition(struct LSSNode *delta, struct LSSNode *statesSet, 
   int statesSize = getSetCardinal(statesSet);
   int deltaSize = getSetCardinal(delta);
 
-  // 1) CADENA VACIA
+  // 1) CADENA VACIÁ
   if(strcmp(symbol, "") == 0) {
 
     if(DEBUG) printf("<?> Transicion con cadena vacia\n");
@@ -365,7 +365,7 @@ struct LSSNode *getTransition(struct LSSNode *delta, struct LSSNode *statesSet, 
   }
 
   // 2) OTRAS CADENAS
-  // Por cada transicion de Delta
+  // Por cada transición de Delta
   for(int i = 1; i <= deltaSize; i++) {
     struct LSSNode *transition = getElementByPos(&delta, i);
     struct LSSNode *fromState = getElementByPos(&transition, 1);
@@ -388,7 +388,7 @@ struct LSSNode *getTransition(struct LSSNode *delta, struct LSSNode *statesSet, 
 
         if(DEBUG) { printf("<?> Transicion encontrada = ");printLss(transition);printf("\n"); }
 
-        // Por cada estado de llegada de la transicion
+        // Por cada estado de llegada de la transición
         for(int k = 1; k <= toStatesSize; k++) {
           temp1 = getElementByPos(&toStates, k);
           temp2 = cloneLss(temp1, getElementType(temp1));
@@ -603,7 +603,7 @@ struct LSSNode *afndToAfd(struct LSSNode *afnd) {
 /* Condiciones para ser AFND
  * - Si en d, un estado tiene más de una transición con el mismo símbolo
  * - Si q0 es un conjunto
- * - Si el destino de una transicion tiene mas de un elemento */
+ * - Si el destino de una transición tiene mas de un elemento */
 enum AF_TYPE getAfType(struct LSSNode *af) {
   if(af == NULL) {
     printf("<x> El automata finito es NULL\n");
@@ -779,7 +779,7 @@ struct LSSNode *newAf(void) {
 
   printf("Carga de un automata finito\n");
   printf("Metodo de carga\n");
-  printf("1. Por partes\n"); // Falta implementar la validacion
+  printf("1. Por partes\n"); // Falta implementar la validación
   printf("2. Directa\n"); // 
 
   switch(newUserOption(1, 2)) {
@@ -789,7 +789,7 @@ struct LSSNode *newAf(void) {
 
       printf("Ingrese el conjunto de estados\n# ");
       userString = newUserString();
-      // Verficiar que sea un conjunto de estados válido
+      // Verificar que sea un conjunto de estados válido
       if(!appendElementToList(&af, newLssFromString(userString))) {
         printf("<x> Error al insertar el conjunto de estados");
         goto error;

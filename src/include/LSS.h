@@ -44,7 +44,7 @@ int             getSetCardinal(struct LSSNode *set);
 
 // LISTAS (NODOS LST)
 
-// Crea una lista vacia
+// Crea una lista vacía
 struct LSSNode *newEmptyList(void);
 // Inserta un elemento al final de una lista
 bool            appendElementToList(struct LSSNode **list, struct LSSNode *elementAsNode);
@@ -57,7 +57,7 @@ int             getListSize(struct LSSNode *list);
 struct LSSNode *newLssFromString(char *listOrSetAsString);
 // Duplica una estructura y todos sus elementos en una nueva del tipo indicado, la original no se elimina.
 struct LSSNode *cloneLss(struct LSSNode *listOrSetorString, enum NODE_TYPE newType);
-// Mostrar en consola toda la estuctura indicada
+// Mostrar en consola toda la estructura indicada
 void            printLss(struct LSSNode *listOrSet);
 //
 void            generateDotFile(struct LSSNode *listOrSet);
