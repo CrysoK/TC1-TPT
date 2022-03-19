@@ -1,9 +1,10 @@
 # Changelog
 
-## Planeado
+## [0.9.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.9.0) - 2022-03-19
 
-- Visualización mejorada.
-- Validación de un **AF** mientras el usuario lo va ingresando.
+- Ahora la opción 3 permite generar una imagen y mostrarla cuando
+  [Graphviz](https://graphviz.org/download/) está instalado.
+- Correcciones/mejoras menores.
 
 ## [0.8.0](https://github.com/CrysoK/TCI_TPT/releases/tag/0.8.0) - 2021-07-30
 
