@@ -95,6 +95,8 @@ struct LSSNode *newAf(void);
 void printAf(struct LSSNode *automataFinito);
 //
 void acceptanceMenu(struct LSSNode *automataFinito);
+// Creación del gráfico del autómata finito
+void graphvizMenu(struct LSSNode *automataFinito);
 //
 int newUserOption(int min, int max);
 // Ejecuta un comando para limpiar la consola
@@ -126,7 +128,7 @@ int main(void) {
         pauseProgram();
         break;
       case 3:
-        generateDotFile(automataFinito);
+        graphvizMenu(automataFinito);
         break;
       case 4:
         acceptanceMenu(automataFinito);
@@ -880,4 +882,46 @@ void acceptanceMenu(struct LSSNode *automataFinito) {
     printf("La cadena \"%s\" SI ES ACEPTADA por el automata finito\n", userString);
   } else printf("La cadena \"%s\" NO ES ACEPTADA por el automata finito\n", userString);
   sdsfree(userString);
+}
+
+void graphvizMenu(struct LSSNode *automataFinito) {
+  printf("Los archivos se crearan en la carpeta donde esta este programa\n");
+  printf("Ingrese un nombre para los archivos\n# ");
+  char *name = newUserString();
+  printf("Ingrese el formato de salida (png, jpg, svg, etc.)\n# ");
+  char *format = newUserString();
+  printf("Ingrese la resolucion en PPP/DPI (recomendado: 300)\n");
+  int dpi = newUserOption(1, 1000);
+
+#ifdef _WIN32
+  char *no_echo = "1>nul 2>nul";
+  char *start_viewer = sdscatfmt(sdsempty(), "start %S.%S %s", name, format, no_echo);
+#else
+  char *no_echo = "1>/dev/null 2>/dev/null";
+  char *start_viewer = sdscatfmt(sdsempty(), "open %S.%S %s", name, format, no_echo);
+#endif
+
+  char *cmd = sdscatfmt(sdsempty(), "dot -T%S -Gdpi=%i %S.dot -o %S.%S %s", format, dpi, name, name, format, no_echo);
+  generateDotFile(automataFinito, name);
+  printf("Generando archivo %s.%s\n", name, format);
+  int r = system(cmd);
+  if(DEBUG) printf("<?> El comando \"%s\" retorna: %d\n", cmd, r);
+  switch(r) {
+    case 0:
+      printf("Imagen generada. Abriendo...\n");
+      r = system(start_viewer);
+      if(DEBUG) printf("<?> El comando \"%s\" retorna: %d\n", start_viewer, r);
+      if(!r) break;
+      printf("<x> Algo salio mal\n");
+      break;
+    case 1: case 127: case 9009: case 32512:
+      printf("Graphviz no encontrado. Para generar el grafico, instale Graphviz: https://graphviz.org/download\n");
+      break;
+    default:
+      printf("<x> Error al generar la imagen\n");
+  }
+  sdsfree(start_viewer);
+  sdsfree(name);
+  sdsfree(format);
+  sdsfree(cmd);
 }
