@@ -60,7 +60,7 @@ struct LSSNode *cloneLss(struct LSSNode *listOrSetorString, enum NODE_TYPE newTy
 // Mostrar en consola toda la estructura indicada
 void            printLss(struct LSSNode *listOrSet);
 //
-void            generateDotFile(struct LSSNode *listOrSet);
+void            generateDotFile(struct LSSNode *listOrSet, char *fileName);
 // Elimina una estructura completamente, liberando la memoria asignada
 void            freeLss(struct LSSNode **listOrSetOrString);
 // Indica si una lista o un conjunto tiene al menos un elemento

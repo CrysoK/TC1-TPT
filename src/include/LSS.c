@@ -163,23 +163,22 @@ void genDotNodes(FILE *file, struct LSSNode *actual, int *id, struct LSSNode *pr
   genDotNodes(file, actual->next, id, actual, aux, 1);
 }
 
-void generateDotFile(struct LSSNode *lss) {
-
+void generateDotFile(struct LSSNode *lss, char *fileName) {
+  char *fileNameEx = sdscatprintf(sdsempty(), "%s.dot", fileName);
+  printf("Generando archivo %s\n", fileNameEx);
   // open file in write mode
-  FILE *file = fopen("LSS.dot", "w");
+  FILE *file = fopen(fileNameEx, "w");
   if(file == NULL) {
-    printf("<x> No se pudo abrir el archivo\n");
+    printf("<x> No se pudo crear el archivo\n");
     return;
   }
-
   fprintf(file, "digraph AF {\n\tgraph [center=true splines=true]\n\tnode[shape=record]\n");
-
   int id = 0;
   genDotNodes(file, lss, &id, NULL, 0, 0);
-
   fprintf(file, "}");
-
   fclose(file);
+  printf("Archivo %s generado\n", fileNameEx);
+  sdsfree(fileNameEx);
 }
 
 void freeLss(struct LSSNode ** sl) {
