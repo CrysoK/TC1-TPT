@@ -26,15 +26,15 @@ finitos.
 datos que puede representar un nodo **LSS**.
 
 ```c
-enum NODE_TYPE { LST, SET, STR };
+enum LSS_NodeType { LST, SET, STR };
 
-struct LSSNode {
-  enum NODE_TYPE type;
+struct LSS_Node {
+  enum LSS_NodeType type;
   union {
     char *str;
     struct {
-      struct LSSNode *data;
-      struct LSSNode *next;
+      struct LSS_Node *data;
+      struct LSS_Node *next;
     };
   };
 };
@@ -113,7 +113,7 @@ Se puede concluir que el TAD diseñado permite almacenar autómatas finitos.
 
 ### Objetivos
 
-Implementar el [TAD](#tad) descripto utilizando la estructura de datos
+Implementar el [TAD](#tad) descrito utilizando la estructura de datos
 propuesta. Luego utilizarlo en un programa para las siguientes tareas:
 
 - Cargar un AF "por partes": primero el conjunto de estados, luego el alfabeto,
@@ -139,10 +139,10 @@ indican por teclado.
 
 Algunos mensajes utilizan ciertos símbolos, que indican lo siguiente:
 
-- `<x>` Mensaje de error.`
+- `<x>` Mensaje de error.
 - `<!>` Mensaje de advertencia.
 - `<i>` Información secundaria.
-- `<?>` Mensajes que se activan al usar `#DEBUG 1` en el código fuente.
+- `<?>` Mensajes para depuración (se activan en [`main.c:43`](https://github.com/CrysoK/TC1-TPT/blob/main/src/main.c#L43)).
 - `#`  Se espera que el usuario ingrese datos.
 
 ### Carga de un autómata finito
