@@ -1,5 +1,4 @@
-#pragma GCC system_header
-/* SDSLib 2.0 -- A C dynamic strings library
+/* SDSLib 2.2 -- A C dynamic strings library
  *
  * Copyright (c) 2006-2015, Salvatore Sanfilippo <antirez at gmail dot com>
  * Copyright (c) 2015, Oran Agra
@@ -38,6 +37,11 @@
  * the include of your alternate allocator if needed (not needed in order
  * to use the default libc allocator). */
 
+#ifndef __SDS_ALLOC_H__
+#define __SDS_ALLOC_H__
+
 #define s_malloc malloc
 #define s_realloc realloc
 #define s_free free
+
+#endif

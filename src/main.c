@@ -25,7 +25,7 @@
  *  #  Input
  *
  * FUENTES
- * - SDS Simple Dynamic Strings: https://github.com/antirez/sds
+ * - SDS Simple Dynamic Strings: https://github.com/jcorporation/sds
  * - natsort: https://github.com/sourcefrog/natsort
 \*/
 
