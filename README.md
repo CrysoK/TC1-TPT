@@ -26,15 +26,15 @@ finitos.
 datos que puede representar un nodo **LSS**.
 
 ```c
-enum NODE_TYPE { LST, SET, STR };
+enum LSS_NodeType { LST, SET, STR };
 
-struct LSSNode {
-  enum NODE_TYPE type;
+struct LSS_Node {
+  enum LSS_NodeType type;
   union {
     char *str;
     struct {
-      struct LSSNode *data;
-      struct LSSNode *next;
+      struct LSS_Node *data;
+      struct LSS_Node *next;
     };
   };
 };
@@ -71,49 +71,50 @@ struct LSSNode {
 ### Autómatas finitos
 
 Los autómatas finitos pueden ser deterministas o no deterministas. En ambos
-casos su estructura es una *5-upla* definida por ( 𝑄 , 𝛴 , 𝛿 , 𝑞₀ , 𝐹 ) en
+casos su estructura es una $5\text{-upla}$ definida por $(Q,\Sigma,\delta,q_0,F)$ en
 donde:
 
-- 𝑄 es el conjunto de estados,
-- 𝛴 es el conjunto de símbolos de entrada,
-- 𝑞₀ es el estado inicial,
-- 𝐹 el conjunto de estados de aceptación
-- 𝛿, cuando el AF es determinista, es una función de 𝑄 × 𝛴 en 𝑄 y, cuando el
-  AF es no determinista, es una relación en 𝑄 × 𝛴 × 𝑄. Se puede pensar a 𝛿
-  como una terna o lista de tres elementos que representan el estado de partida,
-  el carácter leído, y los estados destino (puede ser uno) respectivamente.
+- $Q$ es el conjunto de estados,
+- $\Sigma$ es el conjunto de símbolos de entrada,
+- $q_0$ es el estado inicial,
+- $F$ el conjunto de estados de aceptación
+- $\delta$, cuando el AF es determinista, es una función de $Q\times\Sigma$ en
+  $Q$ y, cuando el AF es no determinista, es una relación en
+  $Q\times\Sigma\times Q$. Se puede pensar a $\delta$ como una terna o lista de
+  tres elementos que representan el estado de partida, el carácter leído, y los
+  estados destino (puede ser uno) respectivamente.
 
-La transición de un AFD 𝛿 { 𝑞₀ , a } = 𝑞₁ se puede representar como [ 𝑞₀ , a
-, 𝑞₁ ].
+La transición de un AFD $\delta(q_0,a)=q_1$ se puede representar como
+$[q_0,a,q_1]$.
 
-La transición de un AFND 𝛿 { 𝑞₀ , a } = { 𝑞₁ , 𝑞₂ } se puede representar
-como  [𝑞₀ , a , { 𝑞₁ , 𝑞₂ } ].
+La transición de un AFND $\delta(q_0,a)=\{q_1,q_2\}$ se puede representar como
+$[q_0,a,\{q_1,q_2\}]$.
 
 Como los AFD son casos particulares de un AFND, se puede pensar en almacenar a
 los AFD con su tercera componente como un conjunto de un solo elemento. Así,
-generalizando, se representa a 𝛿 como una terna o lista de tres elementos cuyo
+generalizando, se representa a $\delta$ como una terna o lista de tres elementos cuyo
 primer elemento es una cadena (el estado), segundo elemento también una cadena
 (el símbolo leído) y tercer elemento un conjunto de cadenas (conjunto de estados
 destino).
 
 Entonces un AF puede ser almacenado con la siguiente estructura:
 
-[ { 𝑞₀ , 𝑞₁ , ... , 𝑞ₙ } , { a , b } , { [ 𝑞₀ , a , { 𝑞₀ , 𝑞₁ } ] , ... ,
-[ 𝑞₂ , b , { 𝑞₁ } ] } , 𝑞₀ , { 𝑞₂ } ]
+$$[\{q_0,q_1,\cdots,q_n\},\{a,b\},\{[q_0,a,\{q_0,q_1\}],\cdots,[q_2,b,\{q_1\}
+]\},q_0,\{q_2\}]$$
 
 Donde:
 
-- 𝑄 = { 𝑞₀ , 𝑞₁ , ... , 𝑞ₙ }
-- 𝛴 = { a , b }
-- 𝛿 = { [ 𝑞₀ , a , { 𝑞₀ , 𝑞₁ } ] , ... , [ 𝑞₂ , b , { 𝑞₁ } ] }
-- 𝑞₀ = 𝑞₀
-- 𝐹 = { 𝑞₂ }
+- $Q=\{q_0,q_1,\cdots,q_n\}$
+- $\Sigma=\{a,b\}$
+- $\delta=\{[q_0,a,\{q_0,q_1\}],\cdots,[q_2,b,\{q_1\} ]\}$
+- $q_0=q_0$
+- $F=\{q_2\}$
 
 Se puede concluir que el TAD diseñado permite almacenar autómatas finitos.
 
 ### Objetivos
 
-Implementar el [TAD](#tad) descripto utilizando la estructura de datos
+Implementar el [TAD](#tad) descrito utilizando la estructura de datos
 propuesta. Luego utilizarlo en un programa para las siguientes tareas:
 
 - Cargar un AF "por partes": primero el conjunto de estados, luego el alfabeto,
@@ -139,10 +140,10 @@ indican por teclado.
 
 Algunos mensajes utilizan ciertos símbolos, que indican lo siguiente:
 
-- `<x>` Mensaje de error.`
+- `<x>` Mensaje de error.
 - `<!>` Mensaje de advertencia.
 - `<i>` Información secundaria.
-- `<?>` Mensajes que se activan al usar `#DEBUG 1` en el código fuente.
+- `<?>` Mensajes para depuración (se activan en [`main.c:43`](https://github.com/CrysoK/TC1-TPT/blob/main/src/main.c#L43)).
 - `#`  Se espera que el usuario ingrese datos.
 
 ### Carga de un autómata finito
