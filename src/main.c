@@ -38,10 +38,9 @@
 
 #include "include/LSS.h" // TAD "Lists, sets & strings"
 #include "include/sds/sds.h" // Librería externa "Simple Dynamic Strings"
+#include "include/debug.h"
 
-#ifndef DEBUG
-#define DEBUG 0
-#endif
+bool DEBUG = false;
 
 // DECLARACIONES ///////////////////////////////////////////////////////////////
 
@@ -50,104 +49,111 @@
 /* NONE = Ninguno
  * AFND = Automata Finito No Determinista
  * AFD = Automata Finito Determinista */
-enum AF_TYPE { NONE, AFND, AFD };
+enum AF_Type { NONE, AFND, AFD };
 /* Q = Conjunto de estados
  * E = Conjunto de símbolos
  * D = Conjunto de transiciones
  * q0 = Estado inicial
  * F = Conjunto de estados de aceptación */
-enum AF_ELEM { Q = 1, E, D, q0, F };
+enum AF_Elem { Q = 1, E, D, q0, F };
 /* Devuelve un conjunto con los estados alcanzados a partir de los estados del
- * conjuntoo 'states'.
+ * conjunto 'states'.
  * 'delta' = conjunto de transiciones a utilizar
  * 'states' = conjunto de estados de partida
  * 'symbol' = símbolo de entrada */
-struct LSSNode *getTransition(struct LSSNode *delta, struct LSSNode *states, char *symbol);
+struct LSS_Node *AF_get_transition(
+  struct LSS_Node *delta,
+  struct LSS_Node *states,
+  char *symbol
+);
 /* Divide una cadena, según los símbolos indicados, en elementos de un array. La
  * cadena original no se modifica.
  * 'string' = cadena a dividir
  * 'symbols' = conjunto de símbolos
  * 'size' = cantidad de elementos resultantes */
-char **splitStringBySymbols(char *string, struct LSSNode *symbols, int *size);
+char **AF_split_string_by_symbols(
+  char *string,
+  struct LSS_Node *symbols,
+  int *size
+);
 /* Indica si una cadena es aceptada por un autómata finito */
-bool isStringAccepted(struct LSSNode *af, char *string);
+bool AF_is_string_accepted(struct LSS_Node *af, char *string);
 /* Validación simple de un autómata finito. Devuelve el tipo del mismo. */
-enum AF_TYPE getAfType(struct LSSNode *af);
+enum AF_Type AF_get_type(struct LSS_Node *af);
 /* Convierte un autómata finito no determinista en uno determinista. No elimina
  * el original. */
-struct LSSNode *afndToAfd(struct LSSNode *afnd);
+struct LSS_Node *AF_afnd_to_afd(struct LSS_Node *afnd);
 
 // Cadenas
 
 /* Recibe la entrada desde consola y se almacena dinámicamente. La memoria debe
  * ser liberada con 'sdsfree' */
-char *newUserString(void);
+char *SDS_new_user_input(void);
 /* Elimina el contenido de una cadena sin liberar su memoria asignada */
-void clearSds(char * str);
+void SDS_clear(char * str);
 
 // Interfaz y otras
 
 /* Menú principal. */
-int mainMenu(enum AF_TYPE afType);
+int UI_main_menu(enum AF_Type af_type);
 /* Interfaz para ingresar un autómata finito */
-struct LSSNode *newAf(void);
+struct LSS_Node *UI_new_af(void);
 /* Interfaz para mostrar un autómata finito */
-void printAf(struct LSSNode *automataFinito);
+void UI_print_af(struct LSS_Node *automata_finito);
 //
-void acceptanceMenu(struct LSSNode *automataFinito);
+void UI_acceptance_menu(struct LSS_Node *automata_finito);
 // Creación del gráfico del autómata finito
-void graphvizMenu(struct LSSNode *automataFinito);
+void UI_graphviz_menu(struct LSS_Node *automata_finito);
 //
-int newUserOption(int min, int max);
+int UI_new_user_option(int min, int max);
 // Ejecuta un comando para limpiar la consola
-void clearConsole(void);
+void UI_clear_console(void);
 // Pide presionar ENTER para continuar
-void pauseProgram(void);
+void UI_pause(void);
 // Elimina el buffer de stdin
-void clearStdIn(void);
+void UI_clear_stdin(void);
 
 // MAIN ////////////////////////////////////////////////////////////////////////
 
 int main(void) {
-  if(DEBUG) printf("<i> Para desactivar mensajes del tipo \"<?>\" defina DEBUG 0\n");
-
-  struct LSSNode *automataFinito = NULL;
-  struct LSSNode *aux = NULL;
-  enum AF_TYPE afType = NONE;
-  int userOption;
+  DBG_log("<?> Mensajes de depuracion activados\n");
+  struct LSS_Node *automata_finito = NULL;
+  struct LSS_Node *aux = NULL;
+  enum AF_Type af_type = NONE;
+  int user_option;
   do { // Menu principal
-    userOption = mainMenu(afType);
-    switch(userOption) {
+    user_option = UI_main_menu(af_type);
+    switch(user_option) {
       case 1:
-        freeLss(&automataFinito);
-        automataFinito = newAf();
-        afType = getAfType(automataFinito);
+        LSS_free(&automata_finito);
+        automata_finito = UI_new_af();
+        af_type = AF_get_type(automata_finito);
         break;
       case 2:
-        printAf(automataFinito);
-        pauseProgram();
+        UI_print_af(automata_finito);
+        UI_pause();
         break;
       case 3:
-        graphvizMenu(automataFinito);
+        UI_graphviz_menu(automata_finito);
         break;
       case 4:
-        acceptanceMenu(automataFinito);
-        pauseProgram();
+        UI_acceptance_menu(automata_finito);
+        UI_pause();
         break;
       case 5:
-        aux = afndToAfd(automataFinito);
+        aux = AF_afnd_to_afd(automata_finito);
         if(aux != NULL) {
-          automataFinito = aux;
+          automata_finito = aux;
           printf("La conversion ha sido realizada con exito\n");
         } else printf("La conversion no pudo ser realizada\n");
-        afType = getAfType(automataFinito);
-        pauseProgram();
+        af_type = AF_get_type(automata_finito);
+        UI_pause();
         break;
       case 0:
         break;
     }
-  } while(userOption != 0);
-  freeLss(&automataFinito);
+  } while(user_option != 0);
+  LSS_free(&automata_finito);
   return 0;
 }
 
@@ -155,9 +161,13 @@ int main(void) {
 
 // AF
 
-char **splitStringBySymbols(char *string, struct LSSNode *symbolsSet, int *arraySize) {
+char **AF_split_string_by_symbols(
+  char *string,
+  struct LSS_Node *symbols_set,
+  int *array_size
+) {
   // Si no hay símbolos
-  if(!hasDataLs(symbolsSet)) {
+  if(!LSS_LST_SET_has_data(symbols_set)) {
     printf("<x> El conjunto de simbolos no contiene elementos\n");
     return NULL;
   }
@@ -169,21 +179,21 @@ char **splitStringBySymbols(char *string, struct LSSNode *symbolsSet, int *array
   // Array de cadenas
   char **array;
   // Cantidad de símbolos del AF
-  int setSize = getSetCardinal(symbolsSet);
+  int set_size = LSS_SET_cardinal(symbols_set);
   // Cantidad de memoria asignada
-  int memBlock = 2;
+  int mem_block = 2;
   // Posición en el array (y cantidad)
   int elem = 0;
   // Inicio de la subcadena (símbolo)
   int start = 0;
   // Carácter de la cadena principal
   int i = 0;
-  // Simbolo del conjunto de símbolos del AF
+  // Símbolo del conjunto de símbolos del AF
   int j = 1;
-  // Carácter de un simbolo del AF
+  // Carácter de un símbolo del AF
   int k = 0;
 
-  array = malloc(sizeof(*array) * memBlock);
+  array = malloc(sizeof(*array) * mem_block);
   if(array == NULL) {
     printf("<x> Error en la asignacion de memoria dinamica\n");
     goto error;
@@ -191,32 +201,38 @@ char **splitStringBySymbols(char *string, struct LSSNode *symbolsSet, int *array
   // Caso de cadena NO vacía
   while(string[i] != '\0') {
     // Es necesario mas memoria?
-    if(memBlock < elem + 2) {
-      memBlock *= 2;
-      char **aux = realloc(array, sizeof(*array) * memBlock);
+    if(mem_block < elem + 2) {
+      mem_block *= 2;
+      char **aux = realloc(array, sizeof(*array) * mem_block);
       if(aux == NULL) {
         printf("<x> Error en la asignacion de memoria dinamica\n");
         goto error;
       }
       array = aux;
     }
-    // Se obtiene el simbolo del conjunto
-    char *afSymbol = getElementString(getElementByPos(&symbolsSet, j));
-    int symLength = strlen(afSymbol);
+    // Se obtiene el símbolo del conjunto
+    char *af_symbol = LSS_get_elem_string(LSS_get_elem_by_pos(&symbols_set, j));
+    int sym_length = strlen(af_symbol);
     // Mientras los caracteres sean iguales
-    while(afSymbol[k] == string[i] && afSymbol[k] != '\0' && string[i] != '\0') {
-      k++; // Siguiente carácter del simbolo
+    while(
+      af_symbol[k] == string[i]
+      && af_symbol[k] != '\0'
+      && string[i] != '\0'
+    ) {
+      k++; // Siguiente carácter del símbolo
       i++; // Siguiente carácter de la cadena
     }
-    if(k == symLength) {
-      // Extraer simbolo
-      array[elem] = sdsnewlen(string + start, symLength);
+    if(k == sym_length) {
+      // Extraer símbolo
+      array[elem] = sdsnewlen(string + start, sym_length);
       elem++;
       start = i;
       j = 1;
     } else {
-      if(j == setSize) {
-        printf("<x> La cadena tiene simbolos que no estan definidos en el AF\n");
+      if(j == set_size) {
+        printf(
+          "<x> La cadena tiene simbolos que no estan definidos en el AF\n"
+        );
         goto error;
       }
       j++; // Siguiente símbolo
@@ -230,96 +246,112 @@ char **splitStringBySymbols(char *string, struct LSSNode *symbolsSet, int *array
     elem = 1;
   }
 
-  *arraySize = elem;
+  *array_size = elem;
   return array;
 
   error: // En caso de que algo falle se libera la memoria asignada
   for(j = 0; j < elem; j++) sdsfree(array[j]);
   free(array);
-  *arraySize = 0;
+  *array_size = 0;
   return NULL;
 }
 
 // Se asume que el AF es correcto (validar antes)
-bool isStringAccepted(struct LSSNode *af, char *string) {
-  struct LSSNode *startState = getElementByPos(&af, q0);
-  if(startState == NULL) return false;
-  struct LSSNode *symbolSet = getElementByPos(&af, E);
-  if(symbolSet == NULL) return false;
-  struct LSSNode *deltaSet = getElementByPos(&af, D);
-  if(deltaSet == NULL) return false;
-  struct LSSNode *finalSet = getElementByPos(&af, F);
-  if(finalSet == NULL) return false;
+bool AF_is_string_accepted(struct LSS_Node *af, char *string) {
+  struct LSS_Node *start_state = LSS_get_elem_by_pos(&af, q0);
+  if(start_state == NULL) return false;
+  struct LSS_Node *symbol_set = LSS_get_elem_by_pos(&af, E);
+  if(symbol_set == NULL) return false;
+  struct LSS_Node *delta_set = LSS_get_elem_by_pos(&af, D);
+  if(delta_set == NULL) return false;
+  struct LSS_Node *final_set = LSS_get_elem_by_pos(&af, F);
+  if(final_set == NULL) return false;
 
-  struct LSSNode *statesSet = NULL;
-  struct LSSNode *intersection = NULL;
-  struct LSSNode *auxNode = NULL;
-  int auxNum;
+  struct LSS_Node *states_set = NULL;
+  struct LSS_Node *intersection = NULL;
+  struct LSS_Node *aux_node = NULL;
+  int aux_num;
 
   //
-  int numOfSymbols = 0;
-  char **stringSymbols = splitStringBySymbols(string, symbolSet, &numOfSymbols);
-  if(stringSymbols == NULL || numOfSymbols == 0) return false;
+  int num_of_symbols = 0;
+  char **string_symbols = AF_split_string_by_symbols(
+    string,
+    symbol_set,
+    &num_of_symbols
+  );
+  if(string_symbols == NULL || num_of_symbols == 0) return false;
 
   if(DEBUG) {
-    for(int a = 0; a < numOfSymbols; a++) printf("%s ", stringSymbols[a]);
+    for(int a = 0; a < num_of_symbols; a++) printf("%s ", string_symbols[a]);
     printf("\n");
   }
 
-  statesSet = newEmptySet();
-  if(statesSet == NULL) {
+  states_set = LSS_SET_new_empty();
+  if(states_set == NULL) {
     printf("<x> Error en la asignacion de memoria dinamica\n");
     goto error;
   }
 
   // Estado inicial
-  auxNode = cloneLss(startState, getElementType(startState));
-  auxNum = addElementToSet(&statesSet, auxNode);
-  if(auxNum <= 0) {
-    if(auxNum < 0) {
+  aux_node = LSS_clone(start_state, LSS_get_elem_type(start_state));
+  aux_num = LSS_SET_add_element(&states_set, aux_node);
+  if(aux_num <= 0) {
+    if(aux_num < 0) {
       printf("<x> Error al insertar un elemento al conjunto\n");
       goto error;
     }
-    freeLss(&auxNode);
+    LSS_free(&aux_node);
   }
 
-  if(DEBUG) { printf("E. Inicial = ");printLss(statesSet);printf("\n"); }
+  if(DEBUG) { printf("E. Inicial = "); LSS_print(states_set); printf("\n"); }
 
-  // Por cada simbolo de la cadena
-  for(int i = 0; i < numOfSymbols; i++) {
-    auxNode = getTransition(deltaSet, statesSet, stringSymbols[i]);
-    freeLss(&statesSet);
-    statesSet = auxNode;
+  // Por cada símbolo de la cadena
+  for(int i = 0; i < num_of_symbols; i++) {
+    aux_node = AF_get_transition(delta_set, states_set, string_symbols[i]);
+    LSS_free(&states_set);
+    states_set = aux_node;
 
-    if(DEBUG) { printf("%d) Resultado = ", i); printLss(statesSet); printf("\n"); }
+    if(DEBUG) {
+      printf("%d) Resultado = ", i);
+      LSS_print(states_set);
+      printf("\n");
+    }
   }
 
-  intersection = newIntersectionSet(statesSet, finalSet);
+  intersection = LSS_SET_new_intersection(states_set, final_set);
   if(intersection == NULL) goto error;
-  bool isAccepted = hasDataLs(intersection);
+  bool isAccepted = LSS_LST_SET_has_data(intersection);
 
-  if(DEBUG) { printf("finalSet = ");printLss(finalSet);printf("\n"); }
-  if(DEBUG) { printf("Intersection = "); printLss(intersection); printf("\n"); }
+  if(DEBUG) { printf("final_set = "); LSS_print(final_set); printf("\n"); }
+  if(DEBUG) {
+    printf("Intersection = ");
+    LSS_print(intersection);
+    printf("\n");
+  }
 
-  sdsfreesplitres(stringSymbols, numOfSymbols);
-  freeLss(&intersection);
-  freeLss(&statesSet);
+  sdsfreesplitres(string_symbols, num_of_symbols);
+  LSS_free(&intersection);
+  LSS_free(&states_set);
 
   return isAccepted;
 
   error:
-  sdsfreesplitres(stringSymbols, numOfSymbols);
-  freeLss(&intersection);
-  freeLss(&statesSet);
+  sdsfreesplitres(string_symbols, num_of_symbols);
+  LSS_free(&intersection);
+  LSS_free(&states_set);
   return false;
 }
 
-struct LSSNode *getTransition(struct LSSNode *delta, struct LSSNode *statesSet, char *symbol) {
+struct LSS_Node *AF_get_transition(
+  struct LSS_Node *delta,
+  struct LSS_Node *states_set,
+  char *symbol
+) {
   if(delta == NULL) {
     printf("<x> El conjunto de transiciones es NULL\n");
     return NULL;
   }
-  if(statesSet == NULL) {
+  if(states_set == NULL) {
     printf("<x> El estado de partida es NULL\n");
     return NULL;
   }
@@ -327,278 +359,334 @@ struct LSSNode *getTransition(struct LSSNode *delta, struct LSSNode *statesSet, 
     printf("<x> El simbolo a utilizar es NULL\n");
     return NULL;
   }
-  if(!hasDataLs(delta)) {
+  if(!LSS_LST_SET_has_data(delta)) {
     printf("<x> El conjunto de transiciones no contiene elementos\n");
     return NULL;
   }
 
-  struct LSSNode *targetStates = newEmptySet();
-  if(targetStates == NULL) {
+  struct LSS_Node *target_states = LSS_SET_new_empty();
+  if(target_states == NULL) {
     printf("<x> Error en la asignacion de memoria dinamica\n");
     return NULL;
   }
 
-  struct LSSNode *temp1 = NULL;
-  struct LSSNode *temp2 = NULL;
-  int statesSize = getSetCardinal(statesSet);
-  int deltaSize = getSetCardinal(delta);
+  struct LSS_Node *temp_1 = NULL;
+  struct LSS_Node *temp_2 = NULL;
+  int statesSize = LSS_SET_cardinal(states_set);
+  int deltaSize = LSS_SET_cardinal(delta);
 
-  // 1) CADENA VACIÁ
+  // 1) CADENA VACÍA
   if(strcmp(symbol, "") == 0) {
 
-    if(DEBUG) printf("<?> Transicion con cadena vacia\n");
+    DBG_log("<?> Transicion con cadena vacia\n");
 
     for(int i = 1; i <= statesSize; i++) {
-      temp1 = getElementByPos(&statesSet, i);
-      temp2 = cloneLss(temp1, getElementType(temp1));
+      temp_1 = LSS_get_elem_by_pos(&states_set, i);
+      temp_2 = LSS_clone(temp_1, LSS_get_elem_type(temp_1));
 
-      int res = addElementToSet(&targetStates, temp2);
+      int res = LSS_SET_add_element(&target_states, temp_2);
 
       if(res <= 0) { // -1: Error | 0: Repetido
         if(res < 0) {
           printf("<x> Error al insertar un elemento en el conjunto\n");
-          freeLss(&targetStates);
+          LSS_free(&target_states);
           return NULL;
         }
-        freeLss(&temp2);
+        LSS_free(&temp_2);
       }
     }
-    return targetStates;
+    return target_states;
   }
 
   // 2) OTRAS CADENAS
   // Por cada transición de Delta
   for(int i = 1; i <= deltaSize; i++) {
-    struct LSSNode *transition = getElementByPos(&delta, i);
-    struct LSSNode *fromState = getElementByPos(&transition, 1);
+    struct LSS_Node *transition = LSS_get_elem_by_pos(&delta, i);
+    struct LSS_Node *fromState = LSS_get_elem_by_pos(&transition, 1);
 
-    char *tranSym = getElementString(getElementByPos(&transition, 2));
+    char *tranSym = LSS_get_elem_string(LSS_get_elem_by_pos(&transition, 2));
 
     // Por cada estado de entrada
     for(int j = 1; j <= statesSize; j++) {
-      struct LSSNode *state = getElementByPos(&statesSet, j);
-      if(getElementType(fromState) == SET && getElementType(state) != SET) {
-        state = statesSet;
+      struct LSS_Node *state = LSS_get_elem_by_pos(&states_set, j);
+      if(
+        LSS_get_elem_type(fromState) == SET
+        && LSS_get_elem_type(state) != SET
+      ) {
+        state = states_set;
       }
 
-      if(DEBUG) { printf("<?> Comparacion: state = ");printLss(state);printf(" | fromState = ");printLss(fromState);printf("\n"); }
+      if(DEBUG) {
+        printf("<?> Comparacion: state = ");
+        LSS_print(state);
+        printf(" | fromState = ");
+        LSS_print(fromState);
+        printf("\n");
+      }
 
-      // Si simbolo y estado coinciden
-      if(strcmp(symbol, tranSym) == 0 && compareLss(state, fromState) == 0) {
-        struct LSSNode *toStates = getElementByPos(&transition, 3);
-        int toStatesSize = getSetCardinal(toStates);
+      // Si símbolo y estado coinciden
+      if(strcmp(symbol, tranSym) == 0 && LSS_compare(state, fromState) == 0) {
+        struct LSS_Node *toStates = LSS_get_elem_by_pos(&transition, 3);
+        int toStatesSize = LSS_SET_cardinal(toStates);
 
-        if(DEBUG) { printf("<?> Transicion encontrada = ");printLss(transition);printf("\n"); }
+        if(DEBUG) {
+          printf("<?> Transicion encontrada = ");
+          LSS_print(transition);
+          printf("\n");
+        }
 
         // Por cada estado de llegada de la transición
         for(int k = 1; k <= toStatesSize; k++) {
-          temp1 = getElementByPos(&toStates, k);
-          temp2 = cloneLss(temp1, getElementType(temp1));
+          temp_1 = LSS_get_elem_by_pos(&toStates, k);
+          temp_2 = LSS_clone(temp_1, LSS_get_elem_type(temp_1));
 
-          int res = addElementToSet(&targetStates, temp2);
+          int res = LSS_SET_add_element(&target_states, temp_2);
 
           if(res <= 0) {
             if(res < 0) {
               printf("<x> Error al insertar un elemento en el conjunto\n");
-              freeLss(&targetStates);
+              LSS_free(&target_states);
               return NULL;
             }
-            freeLss(&temp2);
+            LSS_free(&temp_2);
           }
         }
       }
     }
   }
-  return targetStates;
+  return target_states;
 }
 
-struct LSSNode *afndToAfd(struct LSSNode *afnd) {
+// Crea un AFD a partir de un AFND, sin modificar el AFND.
+struct LSS_Node *AF_afnd_to_afd(struct LSS_Node *afnd) {
+  /*
+  ** Un AF tiene la forma [Q, E, D, q0, F]
+  ** El código se comentará usando el siguiente AFND. La que está entre comillas
+  ** denotará cadenas (para diferenciar el conjunto {} de la cadena "{}")
+  ** [{"q0","q1","q2"},{"0","1"},{["q0","0",{"q0","q1"}],...},"q0",{"q0","q2"}]
+  */
   // Lista que representa al AFD
-  struct LSSNode *afd = NULL;
+  struct LSS_Node *afd = NULL;
   // Lista de nuevos estados del AFD (luego se convierte a conjunto)
-  struct LSSNode *newQ = NULL;
+  struct LSS_Node *afd_Q = NULL;
   // Conjunto de nuevas transiciones del AFD
-  struct LSSNode *newDelta = NULL;
+  struct LSS_Node *afd_D = NULL;
   // Conjunto de símbolos del AFD
-  struct LSSNode *newSymbols = NULL;
+  struct LSS_Node *afd_E = NULL;
   // Nuevo estado inicial del AFD
-  struct LSSNode *newStart = NULL;
+  struct LSS_Node *afd_q0 = NULL;
   // Conjunto de nuevos estados de aceptación
-  struct LSSNode *newFinal = NULL;
+  struct LSS_Node *afd_F = NULL;
 
-  // Cada estado de newQ representado como SET
-  struct LSSNode *stateSET = NULL;
-  // Cada estado de newQ representado como STR
-  struct LSSNode *stateSTR = NULL;
+  // Cada estado de afd_Q representado como SET
+  struct LSS_Node *afd_state_set = NULL;
+  // Cada estado de afd_Q representado como STR
+  struct LSS_Node *afd_state_str = NULL;
   // Cada nuevo estado que se va encontrando representado como SET
-  struct LSSNode *newStateSET = NULL;
+  struct LSS_Node *afd_new_state_set = NULL;
   // Cada nuevo estado que se va encontrando representado como STR
-  struct LSSNode *newStateSTR = NULL;
+  struct LSS_Node *afd_new_state_str = NULL;
   // Cada nueva transición que se va encontrando
-  struct LSSNode *newTran = NULL;
+  struct LSS_Node *new_trans = NULL;
   // Conjunto de estados de aceptación del AFND
-  struct LSSNode *oldFinal = NULL;
+  struct LSS_Node *afnd_F = NULL;
   // Conjunto de transiciones del AFND
-  struct LSSNode *oldDelta = NULL;
+  struct LSS_Node *afnd_D = NULL;
 
-  // Variable auxiliar que puede ser usada en 'freeLss'
-  struct LSSNode *aux = NULL;
-  // Variable auxiliar que NO debe ser usada en 'freeLss'
-  struct LSSNode *auxNF = NULL;
+  // Variable auxiliar que puede ser usada en 'LSS_free'
+  struct LSS_Node *aux_f = NULL;
+  // Variable auxiliar que NO debe ser usada en 'LSS_free'
+  struct LSS_Node *aux_nf = NULL;
 
-  // Simbolo
+  // Símbolo
   char *symbol;
-  // Cantidad de estados de newQ
-  int numStates;
+  // Cantidad de estados de afd_Q
+  int afd_Q_size;
   // Cantidad de símbolos del AFD
-  int numSymbols;
-  // Posición del estado actual en newQ
-  int i = 1;
+  int afd_E_size;
+  // Posición del estado actual en afd_Q
+  int afd_Q_index = 1;
 
   // Conjunto de transiciones del AFND
-  oldDelta = getElementByPos(&afnd, D);
-  if(oldDelta == NULL) goto error;
+  afnd_D = LSS_get_elem_by_pos(&afnd, D /* 3 */); // {"q0","q1","q2"}
+  if(afnd_D == NULL) goto error;
 
   // Conjunto de estados de aceptación del AFND
-  oldFinal = getElementByPos(&afnd, F);
-  if(oldFinal == NULL) goto error;
+  afnd_F = LSS_get_elem_by_pos(&afnd, F /* 5 */); // {"q2"}
+  if(afnd_F == NULL) goto error;
 
   // Se inicializa la lista que contendrá al AFD
-  afd = newEmptyList();
+  afd = LSS_LST_new_empty(); // []
   if(afd == NULL) goto error;
 
-  // Nuevo conjunto de símbolos (se mantienen igual)
-  auxNF = getElementByPos(&afnd, E);
-  if(auxNF == NULL) goto error;
-  newSymbols = cloneLss(auxNF, getElementType(auxNF));
-  if(newSymbols == NULL) goto error;
-  auxNF = NULL;
+  // Nuevo conjunto de símbolos (copia del original)
+  aux_nf = LSS_get_elem_by_pos(&afnd, E /* 2 */);
+  if(aux_nf == NULL) goto error;
+  afd_E = LSS_clone(aux_nf, LSS_get_elem_type(aux_nf)); // {"0", "1"}
+  if(afd_E == NULL) goto error;
+  aux_nf = NULL;
 
-  numSymbols = getSetCardinal(newSymbols);
+  afd_E_size = LSS_SET_cardinal(afd_E);
 
-  // Nuevo estado inicial (se convierte en un conjunto)
-  newStart = newEmptySet();
-  if(newStart == NULL) goto error;
-  auxNF = getElementByPos(&afnd, q0);
-  if(auxNF == NULL) goto error;
-  if(addElementToSet(&newStart, auxNF) < 0) goto error;
-  auxNF = NULL;
-  aux = cloneLss(newStart, STR);
-  if(aux == NULL) goto error;
-  freeLss(&newStart);
-  newStart = aux;
-  aux = NULL;
+  // Nuevo estado inicial
+  afd_q0 = LSS_SET_new_empty(); // {}
+  if(afd_q0 == NULL) goto error;
+  aux_nf = LSS_get_elem_by_pos(&afnd, q0 /* 4 */); // "q0"
+  if(aux_nf == NULL) goto error;
+  if(LSS_SET_add_element(&afd_q0, aux_nf) < 0) goto error; // {"q0"}
+  aux_nf = NULL;
+  aux_f = LSS_clone(afd_q0, STR); // "{q0}"
+  if(aux_f == NULL) goto error;
+  LSS_free(&afd_q0);
+  afd_q0 = aux_f;
+  aux_f = NULL;
 
-  if(DEBUG) { printf("newStart = "); printLss(newStart); printf("\n"); }
+  if(DEBUG) { printf("afd_q0 = "); LSS_print(afd_q0); printf("\n"); }
 
-  // Se inicializa la lista de nuevos estados empezando por el nuevo estado inicial
-  // Se usará una lista para evitar el ordenamiento automático y al final se
-  // convertirá en un conjunto
-  newQ = newEmptyList();
-  if(newQ == NULL) goto error;
-  aux = cloneLss(newStart, STR);
-  if(aux == NULL) goto error;
-  if(!appendElementToList(&newQ, aux)) goto error;
-  aux = NULL;
+  // Se inicializa la lista de nuevos estados empezando por el nuevo estado
+  // inicial Se usará una lista para evitar el ordenamiento automático y al
+  // final se convertirá en un conjunto
+  afd_Q = LSS_LST_new_empty(); // []
+  if(afd_Q == NULL) goto error;
+  aux_f = LSS_clone(afd_q0, STR);
+  if(aux_f == NULL) goto error;
+  if(!LSS_LST_append_element(&afd_Q, aux_f)) goto error; // ["{q0}"]
+  aux_f = NULL;
 
-  numStates = 1;
+  afd_Q_size = 1;
 
   // Se inicializa el nuevo conjunto de transiciones
-  newDelta = newEmptySet();
-  if(newDelta == NULL) goto error;
+  afd_D = LSS_SET_new_empty(); // {}
+  if(afd_D == NULL) goto error;
 
   // Se inicializa el nuevo conjunto de estados de aceptación
-  newFinal = newEmptySet();
-  if(newFinal == NULL) goto error;
+  afd_F = LSS_SET_new_empty(); // {}
+  if(afd_F == NULL) goto error;
 
-  // Por cada nuevo estado
-  while(i <= numStates) {
-    stateSTR = getElementByPos(&newQ, i);
-    stateSET = newLssFromString(getElementString(stateSTR));
+  // Por cada estado del AFD (al principio solo está el inicial)
+  while(afd_Q_index <= afd_Q_size) {
+    afd_state_str = LSS_get_elem_by_pos(&afd_Q, afd_Q_index); // "{q0}" ...
+    // {"q0"} ...
+    afd_state_set = LSS_from_string(LSS_get_elem_string(afd_state_str));
 
-    if(DEBUG) { printf("stateSET = "); printLss(stateSET); printf("\n"); }
+    if(DEBUG) {
+      printf("afd_state_set = ");
+      LSS_print(afd_state_set);
+      printf("\n");
+    }
 
     // Por cada símbolo
-    for(int j = 1; j <= numSymbols; j++) {
-      symbol = getElementString(getElementByPos(&newSymbols, j));
+    for(int j = 1; j <= afd_E_size; j++) {
+      symbol = LSS_get_elem_string(LSS_get_elem_by_pos(&afd_E, j)); // "0" ...
 
       if(DEBUG) printf("symbol = %s\n", symbol);
 
       // Transición
-      newStateSET = getTransition(oldDelta, stateSET, symbol);
-      newStateSTR = cloneLss(newStateSET, STR);
+      afd_new_state_set = AF_get_transition(afnd_D, afd_state_set, symbol);
+      // {"q0","q1"} ...
+      afd_new_state_str = LSS_clone(afd_new_state_set, STR); // "{q0,q1}" ...
 
-      if(DEBUG) { printf("newStateSTR = "); printLss(newStateSTR); printf("\n"); }
+      if(DEBUG) {
+        printf("afd_new_state_str = ");
+        LSS_print(afd_new_state_str); printf("\n");
+      }
 
       // Nueva transición conseguida
-      newTran = newEmptyList();
-      appendElementToList(&newTran, cloneLss(stateSTR, STR));
-      appendElementToList(&newTran, newLssFromString(symbol));
+      new_trans = LSS_LST_new_empty(); // []
+      // ["{q0}"] ...
+      LSS_LST_append_element(&new_trans, LSS_clone(afd_state_str, STR));
+      // ["{q0}","0"] ...
+      LSS_LST_append_element(&new_trans, LSS_from_string(symbol));
 
-      aux = newEmptySet();
-      if(addElementToSet(&aux, cloneLss(newStateSTR, STR)) < 0) goto error;
-      appendElementToList(&newTran, cloneLss(aux, SET));
-      freeLss(&aux);
+      aux_f = LSS_SET_new_empty(); // {}
+      // {"{q0,q1}"} ...
+      if(LSS_SET_add_element(&aux_f, LSS_clone(afd_new_state_str, STR)) < 0) {
+        goto error;
+      }
+      // ["{q0}","0",{"{q0,q1}"}] ...
+      LSS_LST_append_element(&new_trans, LSS_clone(aux_f, SET));
+      LSS_free(&aux_f);
 
+      if(DEBUG) { printf("new_trans = "); LSS_print(new_trans); printf("\n"); }
 
-      if(DEBUG) { printf("newTran = "); printLss(newTran); printf("\n"); }
+      LSS_SET_add_element(&afd_D, new_trans); // {["{q0}","0",{"{q0,q1}"}],...}
 
-      addElementToSet(&newDelta, newTran);
+      if(DEBUG) { printf("afd_D = "); LSS_print(afd_D); printf("\n"); }
 
-      if(DEBUG) { printf("newDelta = "); printLss(newDelta); printf("\n"); }
-
-      if(hasDataLs(newStateSET)) {
+      // El nuevo estado es no vacío?
+      if(LSS_LST_SET_has_data(afd_new_state_set)) {
         // El estado conseguido es realmente nuevo?
-        if(getPosByElement(newQ, newStateSTR) == 0) {
-          appendElementToList(&newQ, cloneLss(newStateSTR, STR));
-          numStates++;
+        if(LSS_get_pos_by_elem(afd_Q, afd_new_state_str) == 0) {
+          // ["{q0}","{q0,q1}",...]
+          LSS_LST_append_element(&afd_Q, LSS_clone(afd_new_state_str, STR));
+          afd_Q_size++;
         }
       }
 
-      if(DEBUG) { printf("newQ = "); printLss(newQ); printf("\n"); }
+      if(DEBUG) { printf("afd_Q = "); LSS_print(afd_Q); printf("\n"); }
 
-      freeLss(&newStateSET);
-      freeLss(&newStateSTR);
+      LSS_free(&afd_new_state_set);
+      LSS_free(&afd_new_state_str);
     }
-    // Estados de aceptación
-    aux = newIntersectionSet(stateSET, oldFinal);
+    // Estados de aceptación (al principio es {"q0"}.{"q0","q2"})
+    aux_f = LSS_SET_new_intersection(afd_state_set, afnd_F); // {"q0"} ...
 
-    if(DEBUG) { printf("Interseccion = "); printLss(aux); printf("\n"); }
+    if(DEBUG) { printf("Interseccion = "); LSS_print(aux_f); printf("\n"); }
 
-    if(hasDataLs(aux)) {
-      addElementToSet(&newFinal, cloneLss(stateSTR, STR));
+    if(LSS_LST_SET_has_data(aux_f)) {
+      // {"{q0}",...}
+      LSS_SET_add_element(&afd_F, LSS_clone(afd_state_str, STR));
     }
 
-    if(DEBUG) { printf("newFinal = "); printLss(newFinal); printf("\n"); printf("\n"); }
+    if(DEBUG) {
+      printf("afd_F = ");
+      LSS_print(afd_F);
+      printf("\n");
+      printf("\n");
+    }
 
-    freeLss(&stateSET);
-    freeLss(&aux);
-    i++;
+    LSS_free(&afd_state_set);
+    LSS_free(&aux_f);
+    afd_Q_index++;
   }
   // Cambio de LST a SET
-  aux = cloneLss(newQ, SET);
-  if(aux == NULL) goto error;
-  freeLss(&newQ);
-  newQ = aux;
+  aux_f = LSS_clone(afd_Q, SET); // {"{q0}","{q0,q1}",...}
+  if(aux_f == NULL) goto error;
+  LSS_free(&afd_Q);
+  afd_Q = aux_f;
 
-  appendElementToList(&afd, newQ);
-  appendElementToList(&afd, newSymbols);
-  appendElementToList(&afd, newDelta);
-  appendElementToList(&afd, newStart);
-  appendElementToList(&afd, newFinal);
+  // [{"{q0}","{q0,q1}",...}]
+  LSS_LST_append_element(&afd, afd_Q);
+  // [{"{q0}","{q0,q1}",...},{"0","1"}]
+  LSS_LST_append_element(&afd, afd_E);
+  // [{"{q0}","{q0,q1}",...},{"0","1"},{["{q0}","0",{"{q0,q1}"}],...}]
+  LSS_LST_append_element(&afd, afd_D);
+  // [{"{q0}","{q0,q1}",...},{"0","1"},{["{q0}","0",{"{q0,q1}"}],...},"{q0}"]
+  LSS_LST_append_element(&afd, afd_q0);
+  /*[
+    {"{q0}","{q0,q1}",...},
+    {"0","1"},
+    {
+      ["{q0}","0",{"{q0,q1}"}],
+      ...
+    },
+    "{q0}",
+    {"{q0}",...}
+  ]*/
+  LSS_LST_append_element(&afd, afd_F);
   return afd;
 
   error:
-  freeLss(&afd);
-  freeLss(&newQ);
-  freeLss(&newDelta);
-  freeLss(&newSymbols);
-  freeLss(&newStart);
-  freeLss(&newFinal);
-  freeLss(&stateSET);
-  freeLss(&newStateSET);
-  freeLss(&newTran);
-  freeLss(&aux);
+  LSS_free(&afd);
+  LSS_free(&afd_Q);
+  LSS_free(&afd_D);
+  LSS_free(&afd_E);
+  LSS_free(&afd_q0);
+  LSS_free(&afd_F);
+  LSS_free(&afd_state_set);
+  LSS_free(&afd_new_state_set);
+  LSS_free(&new_trans);
+  LSS_free(&aux_f);
   return NULL;
 }
 
@@ -606,62 +694,65 @@ struct LSSNode *afndToAfd(struct LSSNode *afnd) {
  * - Si en d, un estado tiene más de una transición con el mismo símbolo
  * - Si q0 es un conjunto
  * - Si el destino de una transición tiene mas de un elemento */
-enum AF_TYPE getAfType(struct LSSNode *af) {
+enum AF_Type AF_get_type(struct LSS_Node *af) {
   if(af == NULL) {
     printf("<x> El automata finito es NULL\n");
     return NONE;
   }
-  if(getElementType(af) != LST) {
+  if(LSS_get_elem_type(af) != LST) {
     printf("<x> El automata finito no es valido\n");
     return NONE;
   }
-  if(getListSize(af) < 5) {
+  if(LSS_LST_size(af) < 5) {
     printf("<x> El automata finito no esta completo\n");
     return NONE;
   }
 
-  struct LSSNode *startState = getElementByPos(&af, q0);
-  if(startState == NULL) {
+  struct LSS_Node *start_state = LSS_get_elem_by_pos(&af, q0);
+  if(start_state == NULL) {
     printf("<x> El estado inicial es NULL\n");
     return NONE;
   }
-  if(getElementType(startState) != STR) return AFND;
+  if(LSS_get_elem_type(start_state) != STR) return AFND;
 
-  struct LSSNode *deltaSet = getElementByPos(&af, D);
-  if(startState == NULL) {
+  struct LSS_Node *delta_set = LSS_get_elem_by_pos(&af, D);
+  if(start_state == NULL) {
     printf("<x> El conjunto de transiciones es NULL\n");
     return NONE;
   }
-  int deltaSize = getSetCardinal(deltaSet);
+  int deltaSize = LSS_SET_cardinal(delta_set);
 
   char *fromStatePrev = "";
   char *symbolPrev = "";
   for(int i = 1; i <= deltaSize; i++) {
 
-    struct LSSNode *transition = getElementByPos(&deltaSet, i);
+    struct LSS_Node *transition = LSS_get_elem_by_pos(&delta_set, i);
 
-    struct LSSNode *toStates = getElementByPos(&transition, 3);
+    struct LSS_Node *toStates = LSS_get_elem_by_pos(&transition, 3);
 
-    if(getElementType(toStates) != SET) {
+    if(LSS_get_elem_type(toStates) != SET) {
       printf("<x> El tercer elemento de una transicion debe ser un conjunto\n");
       return NONE;
     }
-    if(getSetCardinal(toStates) > 1) return AFND;
+    if(LSS_SET_cardinal(toStates) > 1) return AFND;
 
-    struct LSSNode *fromState = getElementByPos(&transition, 1);
-    if(getElementType(fromState) != STR) {
+    struct LSS_Node *fromState = LSS_get_elem_by_pos(&transition, 1);
+    if(LSS_get_elem_type(fromState) != STR) {
       printf("<x> El primer elemento de una transicion debe ser una cadena\n");
       return NONE;
     }
-    char *fromStateString = getElementString(fromState);
-    struct LSSNode *symbol = getElementByPos(&transition, 2);
-    if(getElementType(fromState) != STR) {
+    char *fromStateString = LSS_get_elem_string(fromState);
+    struct LSS_Node *symbol = LSS_get_elem_by_pos(&transition, 2);
+    if(LSS_get_elem_type(fromState) != STR) {
       printf("<x> El segundo elemento de una transicion debe ser una cadena\n");
       return NONE;
     }
-    char *symbolString = getElementString(symbol);
+    char *symbolString = LSS_get_elem_string(symbol);
     if(i != 1) {
-      if(strcmp(fromStatePrev, fromStateString) == 0 && strcmp(symbolPrev, symbolString) == 0) {
+      if(
+        strcmp(fromStatePrev, fromStateString) == 0
+        && strcmp(symbolPrev, symbolString) == 0
+      ) {
         return AFND;
       }
       fromStatePrev = fromStateString;
@@ -674,7 +765,7 @@ enum AF_TYPE getAfType(struct LSSNode *af) {
 // CADENAS
 
 // Ingreso de una cadena de cualquier tamaño (asignación de memoria dinámica)
-char *newUserString(void) {
+char *SDS_new_user_input(void) {
   bool isAscii = true;
   size_t memoryBlock = 16;
   char * string;
@@ -700,7 +791,9 @@ char *newUserString(void) {
     if(character < 32 || character > 126) isAscii = false;
   }
   string[size++] = '\0';
-  if(!isAscii) printf("<!> Ha ingresado caracteres que pueden provocar errores\n");
+  if(!isAscii) {
+    printf("<!> Ha ingresado caracteres que pueden provocar errores\n");
+  }
 
   // Convierte a cadena compatible con las funciones de sds
   resultString = sdsnew(string);
@@ -708,7 +801,7 @@ char *newUserString(void) {
   return resultString;
 }
 
-void clearSds(char *str) {
+void SDS_clear(char *str) {
   str[0] = '\0';
   // Actualiza el tamaño de la sds a 0
   sdsupdatelen(str);
@@ -718,44 +811,44 @@ void clearSds(char *str) {
 
 // INTERFAZ
 
-int newUserOption(int min, int max) {
+int UI_new_user_option(int min, int max) {
   int x = -1;
   while(1) {
     printf("# ");
     scanf("%d", &x);
-    clearStdIn();
+    UI_clear_stdin();
     if(x < min || x > max) {
       printf("<!> Opcion invalida\n");
     } else return x;
   }
 }
 
-void pauseProgram(void) {
+void UI_pause(void) {
   printf("Presione ENTER para continuar . . .");
   char c;
-  // clearStdIn(); // No sé si quien llama esta función, ya limpió el buffer
+  // UI_clear_stdin(); // No sé si quien llama esta función, ya limpió el buffer
   scanf("%c", &c);
-  // clearStdIn(); // Limpio el buffer al finalizar el llamado
+  // UI_clear_stdin(); // Limpio el buffer al finalizar el llamado
 
 }
 
-void clearConsole(void) {
+void UI_clear_console(void) {
   system("clear || cls");
 }
 
-void clearStdIn(void) {
+void UI_clear_stdin(void) {
   char c;
   while((c = getchar()) != '\n' && c != EOF);
 }
 
-int mainMenu(enum AF_TYPE afType) {
+int UI_main_menu(enum AF_Type af_type) {
   int optionMin = 0;
   int optionMax = 1;
-  if(afType == NONE) { // Primera iteración
+  if(af_type == NONE) { // Primera iteración
     printf("<i> No hay un automata finito cargado\n");
     printf("1. Cargar automata finito\n");
   } else { // Resto de iteraciones
-    if(afType == AFD) {
+    if(af_type == AFD) {
       printf("<i> El automata finito cargado es determinista\n");
     } else {
       printf("<i> El automata finito cargado es no determinista\n");
@@ -765,18 +858,18 @@ int mainMenu(enum AF_TYPE afType) {
     printf("3. Generar grafico de la estructura cargada\n");
     printf("4. Probar la aceptacion de una cadena en el automata finito\n");
     // Si el AF es un AFND
-    if(afType == AFND) {
+    if(af_type == AFND) {
       printf("5. Convertir automata finito no determinista en determinista\n");
       optionMax = 5;
     } else optionMax = 4;
   }
   // Se muestra siempre
   printf("0. Salir\n");
-  return newUserOption(optionMin, optionMax);
+  return UI_new_user_option(optionMin, optionMax);
 }
 
-struct LSSNode *newAf(void) {
-  struct LSSNode *af = NULL;
+struct LSS_Node *UI_new_af(void) {
+  struct LSS_Node *af = NULL;
   char *userString;
 
   printf("Carga de un automata finito\n");
@@ -784,51 +877,51 @@ struct LSSNode *newAf(void) {
   printf("1. Por partes\n"); // Falta implementar la validación
   printf("2. Directa\n"); // 
 
-  switch(newUserOption(1, 2)) {
+  switch(UI_new_user_option(1, 2)) {
     case 1:
       printf("Carga por partes\n");
-      af = newEmptyList();
+      af = LSS_LST_new_empty();
 
       printf("Ingrese el conjunto de estados\n# ");
-      userString = newUserString();
+      userString = SDS_new_user_input();
       // Verificar que sea un conjunto de estados válido
-      if(!appendElementToList(&af, newLssFromString(userString))) {
+      if(!LSS_LST_append_element(&af, LSS_from_string(userString))) {
         printf("<x> Error al insertar el conjunto de estados");
         goto error;
       }
       sdsfree(userString);
 
       printf("Ingrese el conjunto de simbolos del alfabeto\n# ");
-      userString = newUserString();
+      userString = SDS_new_user_input();
       // Verificar que sea un conjunto de símbolos válido
-      if(!appendElementToList(&af, newLssFromString(userString))) {
+      if(!LSS_LST_append_element(&af, LSS_from_string(userString))) {
         printf("<x> Error al insertar el conjunto de estados");
         goto error;
       }
       sdsfree(userString);
 
       printf("Ingrese el conjunto de transiciones\n# ");
-      userString = newUserString();
+      userString = SDS_new_user_input();
       // Verificar que sea un conjunto de transiciones válido
-      if(!appendElementToList(&af, newLssFromString(userString))) {
+      if(!LSS_LST_append_element(&af, LSS_from_string(userString))) {
         printf("<x> Error al insertar el conjunto de estados");
         goto error;
       }
       sdsfree(userString);
 
       printf("Ingrese el estado inicial\n# ");
-      userString = newUserString();
+      userString = SDS_new_user_input();
       // Verificar que sea un estado inicial válido
-      if(!appendElementToList(&af, newLssFromString(userString))) {
+      if(!LSS_LST_append_element(&af, LSS_from_string(userString))) {
         printf("<x> Error al insertar el conjunto de estados");
         goto error;
       }
       sdsfree(userString);
 
       printf("Ingrese el conjunto de estados de aceptacion\n# ");
-      userString = newUserString();
+      userString = SDS_new_user_input();
       // Verificar que sea un conjunto de estados de aceptación válido
-      if(!appendElementToList(&af, newLssFromString(userString))) {
+      if(!LSS_LST_append_element(&af, LSS_from_string(userString))) {
         printf("<x> Error al insertar el conjunto de estados");
         goto error;
       }
@@ -839,83 +932,113 @@ struct LSSNode *newAf(void) {
       printf("Carga directa\n");
       printf("Ingrese el automata finito completo\n");
       printf("# ");
-      userString = newUserString();
-      af = newLssFromString(userString);
+      userString = SDS_new_user_input();
+      af = LSS_from_string(userString);
       sdsfree(userString);
       break;
   }
   return af;
 
   error:
-  freeLss(&af);
+  LSS_free(&af);
   sdsfree(userString);
   return NULL;
 }
 
-void printAf(struct LSSNode *af) {
+void UI_print_af(struct LSS_Node *af) {
   printf("Estados\n");
-  printLss(getElementByPos(&af, Q));
+  LSS_print(LSS_get_elem_by_pos(&af, Q));
 
   printf("\nSimbolos de entrada\n");
-  printLss(getElementByPos(&af, E));
+  LSS_print(LSS_get_elem_by_pos(&af, E));
 
   printf("\nTransiciones\n");
-  struct LSSNode *temp = getElementByPos(&af, D);
-  int max = getSetCardinal(temp);
+  struct LSS_Node *temp = LSS_get_elem_by_pos(&af, D);
+  int max = LSS_SET_cardinal(temp);
   for(int i = 1; i <= max; i++) {
-    printLss(getElementByPos(&temp, i));
+    LSS_print(LSS_get_elem_by_pos(&temp, i));
     printf("\n");
   }
 
   printf("Estado inicial\n");
-  printLss(getElementByPos(&af, q0));
+  LSS_print(LSS_get_elem_by_pos(&af, q0));
   printf("\nEstados de aceptacion\n");
-  printLss(getElementByPos(&af, F));
+  LSS_print(LSS_get_elem_by_pos(&af, F));
   printf("\n");
 }
 
-void acceptanceMenu(struct LSSNode *automataFinito) {
+void UI_acceptance_menu(struct LSS_Node *automata_finito) {
   char *userString;
   printf("Ingrese la cadena a evaluar\n# ");
-  userString = newUserString();
-  if(isStringAccepted(automataFinito, userString)) {
-    printf("La cadena \"%s\" SI ES ACEPTADA por el automata finito\n", userString);
-  } else printf("La cadena \"%s\" NO ES ACEPTADA por el automata finito\n", userString);
+  userString = SDS_new_user_input();
+  if(AF_is_string_accepted(automata_finito, userString)) {
+    printf(
+      "La cadena \"%s\" SI ES ACEPTADA por el automata finito\n",
+      userString
+    );
+  } else printf(
+    "La cadena \"%s\" NO ES ACEPTADA por el automata finito\n",
+    userString
+  );
   sdsfree(userString);
 }
 
-void graphvizMenu(struct LSSNode *automataFinito) {
+void UI_graphviz_menu(struct LSS_Node *automata_finito) {
   printf("Los archivos se crearan en la carpeta donde esta este programa\n");
   printf("Ingrese un nombre para los archivos\n# ");
-  char *name = newUserString();
+  char *name = SDS_new_user_input();
   printf("Ingrese el formato de salida (png, jpg, svg, etc.)\n# ");
-  char *format = newUserString();
+  char *format = SDS_new_user_input();
   printf("Ingrese la resolucion en PPP/DPI (recomendado: 300)\n");
-  int dpi = newUserOption(1, 1000);
+  int dpi = UI_new_user_option(1, 1000);
 
 #ifdef _WIN32
   char *no_echo = "1>nul 2>nul";
-  char *start_viewer = sdscatfmt(sdsempty(), "start %S.%S %s", name, format, no_echo);
+  char *start_viewer = sdscatfmt(
+    sdsempty(),
+    "start %S.%S %s",
+    name,
+    format,
+    no_echo
+  );
 #else
   char *no_echo = "1>/dev/null 2>/dev/null";
-  char *start_viewer = sdscatfmt(sdsempty(), "open %S.%S %s", name, format, no_echo);
+  char *start_viewer = sdscatfmt(
+    sdsempty(),
+    "open %S.%S %s",
+    name,
+    format,
+    no_echo
+  );
 #endif
 
-  char *cmd = sdscatfmt(sdsempty(), "dot -T%S -Gdpi=%i %S.dot -o %S.%S %s", format, dpi, name, name, format, no_echo);
-  generateDotFile(automataFinito, name);
+  char *cmd = sdscatfmt(
+    sdsempty(),
+    "dot -T%S -Gdpi=%i %S.dot -o %S.%S %s",
+    format,
+    dpi,
+    name,
+    name,
+    format,
+    no_echo
+  );
+  LSS_gen_dotfile(automata_finito, name);
   printf("Generando archivo %s.%s\n", name, format);
   int r = system(cmd);
-  if(DEBUG) printf("<?> El comando \"%s\" retorna: %d\n", cmd, r);
+  DBG_log("<?> El comando \"%s\" retorna: %d\n", cmd, r);
   switch(r) {
     case 0:
       printf("Imagen generada. Abriendo...\n");
       r = system(start_viewer);
-      if(DEBUG) printf("<?> El comando \"%s\" retorna: %d\n", start_viewer, r);
+      DBG_log("<?> El comando \"%s\" retorna: %d\n", start_viewer, r);
       if(!r) break;
       printf("<x> Algo salio mal\n");
       break;
     case 1: case 127: case 9009: case 32512:
-      printf("Graphviz no encontrado. Para generar el grafico, instale Graphviz: https://graphviz.org/download\n");
+      printf(
+        "Graphviz no encontrado. Para generar el grafico, instale Graphviz: "
+        "https://graphviz.org/download\n"
+      );
       break;
     default:
       printf("<x> Error al generar la imagen\n");
