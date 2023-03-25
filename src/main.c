@@ -544,7 +544,7 @@ struct LSS_Node *AF_afnd_to_afd(struct LSS_Node *afnd) {
   if(DEBUG) { printf("afd_q0 = "); LSS_print(afd_q0); printf("\n"); }
 
   // Se inicializa la lista de nuevos estados empezando por el nuevo estado
-  // inicial Se usará una lista para evitar el ordenamiento automático y al
+  // inicial. Se usará una lista para evitar el ordenamiento automático y al
   // final se convertirá en un conjunto
   afd_Q = LSS_LST_new_empty(); // []
   if(afd_Q == NULL) goto error;
