@@ -839,7 +839,7 @@ void UI_clear_console(void) {
 }
 
 void UI_clear_stdin(void) {
-  char c;
+  int c;
   while((c = getchar()) != '\n' && c != EOF);
 }
 
