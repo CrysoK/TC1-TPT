@@ -44,10 +44,13 @@ struct LSS_Node {
 
 - Se simbolizan con una llave de apertura, una secuencia de elementos separados
   por comas y una llave de cierre. Ejemplo: `{uno, dos, tres}`.
+
 - No poseen elementos repetidos.
+
 - No tienen orden. El conjunto `{uno, dos, tres}` es el mismo conjunto que
   `{dos, uno, tres}` o que `{tres, dos, uno}`. En el programa se ordenan para
   simplificar operaciones como la comparación.
+
 - Aritmética de conjuntos:
   - Unión (no implementado).
   - Intersección.
@@ -59,9 +62,12 @@ struct LSS_Node {
 
 - Se simbolizan con un corchete de apertura, la lista de elementos separados por
   comas y un corchete de cierre. Ejemplo: `[uno, dos, tres]`.
+
 - Pueden tener elementos repetidos.
+
 - Tienen orden. La lista `[uno, dos, tres]` es distinta que `[dos, uno, tres]` o
   que `[tres, dos, uno]`.
+
 - Aritmética de listas:
   - Agregar elementos al inicio y al final.
   - Remover elementos al inicio y al final (no implementado).
@@ -75,9 +81,13 @@ casos su estructura es una *5-upla* definida por ( 𝑄 , 𝛴 , 𝛿 , 𝑞₀ 
 donde:
 
 - 𝑄 es el conjunto de estados,
+
 - 𝛴 es el conjunto de símbolos de entrada,
+
 - 𝑞₀ es el estado inicial,
+
 - 𝐹 el conjunto de estados de aceptación
+
 - 𝛿, cuando el AF es determinista, es una función de 𝑄 × 𝛴 en 𝑄 y, cuando el
   AF es no determinista, es una relación en 𝑄 × 𝛴 × 𝑄. Se puede pensar a 𝛿
   como una terna o lista de tres elementos que representan el estado de partida,
@@ -118,10 +128,14 @@ propuesta. Luego utilizarlo en un programa para las siguientes tareas:
 
 - Cargar un AF "por partes": primero el conjunto de estados, luego el alfabeto,
   etc. (cargar la transición de estados por terna).
+
 - Almacenar el AF en la estructura propuesta.
+
 - Mostrar el autómata finito.
+
 - Dada una cadena, indicar si pertenece al lenguaje regular cuyo autómata finito
   es el ingresado.
+  
 - Si el AF es no determinista, convertirlo en determinista.
 
 ## Instalación
