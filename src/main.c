@@ -90,7 +90,7 @@ struct LSS_Node *AF_afnd_to_afd(struct LSS_Node *afnd);
  * ser liberada con 'sdsfree' */
 char *SDS_new_user_input(void);
 /* Elimina el contenido de una cadena sin liberar su memoria asignada */
-void SDS_clear(char * str);
+char *SDS_clear(char * str);
 
 // Interfaz y otras
 
@@ -803,12 +803,12 @@ char *SDS_new_user_input(void) {
   return resultString;
 }
 
-void SDS_clear(char *str) {
+char *SDS_clear(char *str) {
   str[0] = '\0';
   // Actualiza el tamaño de la sds a 0
   sdsupdatelen(str);
   // Elimina la memoria extra previamente asignada
-  str = sdsRemoveFreeSpace(str);
+  return sdsRemoveFreeSpace(str);
 }
 
 // INTERFAZ
