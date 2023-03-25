@@ -782,11 +782,13 @@ char *SDS_new_user_input(void) {
     string[size++] = character;
     if(size == memoryBlock) {
       memoryBlock *= 2;
-      string = realloc(string, sizeof * string * (memoryBlock));
-      if(!string) {
+      char * tmp = realloc(string, sizeof * string * (memoryBlock));
+      if(!tmp) {
         printf("<x> Error en la asignacion dinamica de memoria");
-        return string;
+        free(string);
+        return NULL;
       }
+      string = tmp;
     }
     if(character < 32 || character > 126) isAscii = false;
   }
