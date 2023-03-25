@@ -770,7 +770,7 @@ char *SDS_new_user_input(void) {
   size_t memoryBlock = 16;
   char * string;
   char * resultString;
-  char character;
+  int character;
   size_t size = 0;
 
   string = realloc(NULL, sizeof * string * memoryBlock);
